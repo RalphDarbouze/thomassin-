@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -38,15 +37,47 @@
     }
     #channelInfo { color: #FFD700; }
     #visitorStats {
-      margin: 8px 0 20px; text-align: center;
-      font-size: 1.1em; color: #FFD700;
-      background: #1b1b1b; padding: 10px 16px; border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.35);
-      width: 100%; max-width: 1000px;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin: 20px 0;
+      padding: 12px 20px;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+      border: 1px solid #4CAF50;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 1000px;
     }
+    .visitorStat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95em;
+    }
+    .visitorStat span {
+      font-weight: bold;
+      color: #4CAF50;
+      background: rgba(0,0,0,0.3);
+      padding: 2px 10px;
+      border-radius: 10px;
+      min-width: 40px;
+      text-align: center;
+      display: inline-block;
+    }
+    .trend-icon {
+      margin-left: 5px;
+      font-size: 0.8em;
+    }
+    .trend-up { color: #4CAF50; }
+    .trend-down { color: #FF6347; }
+    .trend-neutral { color: #FFD700; }
     @media screen and (max-width: 768px) {
       h1 { font-size: 1.5em; }
       #controls { padding: 15px; }
+      #visitorStats { gap: 15px; padding: 10px; }
+      .visitorStat { font-size: 0.85em; }
     }
   </style>
 </head>
@@ -71,10 +102,11 @@
     <div id="speedWarning"></div>
   </div>
 
-  <!-- 👥 Section visiteurs -->
+  <!-- Enhanced Visitor Stats -->
   <div id="visitorStats">
-    👥 Visiteurs aujourd'hui : <span id="dailyCount">—</span><br>
-    🌍 Visiteurs cette année : <span id="yearlyCount">—</span>
+    <div class="visitorStat">👥 Aujourd'hui: <span id="dailyCount">—</span></div>
+    <div class="visitorStat">📅 Ce mois: <span id="monthlyCount">—</span></div>
+    <div class="visitorStat">🌍 Année: <span id="yearlyCount">—</span></div>
   </div>
 
   <script>
@@ -101,7 +133,7 @@
       runSpeedTest();
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
-      updateVisitorCounts(); // init counters
+      updateVisitorCounts();
     };
 
     // --- Speed Test ---
@@ -258,48 +290,60 @@
       favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
     }
 
-    // ---------- Visitor Count (CountAPI) ----------
-    // Namespace should be unique to YOUR site to avoid collisions.
+    // ---------- Enhanced Visitor Count System ----------
     const COUNT_NS = "rubis-tv-player-ralphdarbouze";
 
-    // Build a YYYY-MM-DD string in LOCAL TIME (not UTC) to match your audience’s day.
     function localDateKey() {
       const d = new Date();
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function localMonthKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getPreviousDayKey() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getPreviousMonthKey() {
+      const d = new Date();
+      d.setMonth(d.getMonth() - 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
     async function countapiGet(ns, key) {
       const url = `https://api.countapi.xyz/get/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("get failed");
-      return res.json(); // { value }
+      return res.json();
     }
+
     async function countapiCreate(ns, key, value = 0) {
       const url = `https://api.countapi.xyz/create?namespace=${encodeURIComponent(ns)}&key=${encodeURIComponent(key)}&value=${value}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("create failed");
       return res.json();
     }
+
     async function countapiHit(ns, key) {
       const url = `https://api.countapi.xyz/hit/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("hit failed");
-      return res.json(); // { value }
+      return res.json();
     }
 
-    // Ensure the key exists; if not, create it at 0.
     async function ensureKey(ns, key) {
       try {
         await countapiGet(ns, key);
       } catch {
-        try { await countapiCreate(ns, key, 0); } catch(e) { /* ignore */ }
+        try { await countapiCreate(ns, key, 0); } catch(e) { console.error("CountAPI create failed:", e); }
       }
     }
 
-    // Increment once per device per period (daily/yearly) using localStorage marks.
     async function incrementOncePerDevice(ns, key, elementId) {
       const markKey = `visited_${ns}_${key}`;
       await ensureKey(ns, key);
@@ -310,24 +354,77 @@
           const data = await countapiHit(ns, key);
           value = data.value;
           localStorage.setItem(markKey, '1');
+          animateCounter(elementId, value);
         } catch {
-          // fallback: read current value if hit failed
-          try { value = (await countapiGet(ns, key)).value; } catch { value = "N/A"; }
+          try { 
+            const data = await countapiGet(ns, key);
+            value = data.value;
+            document.getElementById(elementId).textContent = value;
+          } catch { 
+            document.getElementById(elementId).textContent = "N/A";
+          }
         }
       } else {
-        // already counted on this device, just read current value
-        try { value = (await countapiGet(ns, key)).value; } catch { value = "N/A"; }
+        try { 
+          const data = await countapiGet(ns, key);
+          document.getElementById(elementId).textContent = data.value;
+        } catch { 
+          document.getElementById(elementId).textContent = "N/A";
+        }
       }
+    }
+
+    async function updateCountWithTrend(ns, key, elementId, compareKey = null) {
+      try {
+        await ensureKey(ns, key);
+        const current = await countapiGet(ns, key);
+        let trend = 'trend-neutral';
+        
+        if (compareKey) {
+          try {
+            const compare = await countapiGet(ns, compareKey);
+            trend = current.value > compare.value ? 'trend-up' : 
+                   (current.value < compare.value ? 'trend-down' : 'trend-neutral');
+          } catch {
+            // If comparison fails, just show neutral
+          }
+        }
+
+        const el = document.getElementById(elementId);
+        if (el) {
+          el.innerHTML = `${current.value.toLocaleString()} <span class="trend-icon ${trend}">${
+            trend === 'trend-up' ? '↑' : (trend === 'trend-down' ? '↓' : '→')
+          }</span>`;
+        }
+      } catch (e) {
+        const el = document.getElementById(elementId);
+        if (el) el.textContent = "N/A";
+      }
+    }
+
+    function animateCounter(elementId, target) {
       const el = document.getElementById(elementId);
-      if (el) el.textContent = value;
+      if (!el) return;
+      
+      const duration = 1500;
+      const start = 0;
+      const increment = target / (duration / 16);
+      
+      let current = start;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          clearInterval(timer);
+          current = target;
+        }
+        el.textContent = Math.floor(current).toLocaleString();
+      }, 16);
     }
 
     function updateVisitorCounts() {
-      const todayKey = "day-" + localDateKey();          // e.g., day-2025-08-16 (LOCAL)
-      const yearKey  = "year-" + new Date().getFullYear(); // e.g., year-2025
-
-      incrementOncePerDevice(COUNT_NS, todayKey, "dailyCount");
-      incrementOncePerDevice(COUNT_NS, yearKey,  "yearlyCount");
+      incrementOncePerDevice(COUNT_NS, "day-" + localDateKey(), "dailyCount");
+      updateCountWithTrend(COUNT_NS, "month-" + localMonthKey(), "monthlyCount", "month-" + getPreviousMonthKey());
+      updateCountWithTrend(COUNT_NS, "year-" + new Date().getFullYear(), "yearlyCount", "year-" + (new Date().getFullYear() - 1));
     }
   </script>
 </body>
