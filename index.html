@@ -23,7 +23,7 @@
     video { width: 100%; border: 4px solid #4CAF50; border-radius: 10px; background: #000; }
     #controls {
       background: #1e1e1e; padding: 20px; border-radius: 10px;
-      width: 100%; max-width: 1000px; margin-bottom: 20px;
+      width: 100%; max-width: 1000px; margin-bottom: 16px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     select, button {
@@ -38,8 +38,11 @@
     }
     #channelInfo { color: #FFD700; }
     #visitorStats {
-      margin-top: 20px; text-align: center;
-      font-size: 1.2em; color: #FFD700;
+      margin: 8px 0 20px; text-align: center;
+      font-size: 1.1em; color: #FFD700;
+      background: #1b1b1b; padding: 10px 16px; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      width: 100%; max-width: 1000px;
     }
     @media screen and (max-width: 768px) {
       h1 { font-size: 1.5em; }
@@ -70,11 +73,12 @@
 
   <!-- 👥 Section visiteurs -->
   <div id="visitorStats">
-    👥 Visiteurs aujourd'hui : <span id="dailyCount">0</span><br>
-    🌍 Visiteurs cette année : <span id="yearlyCount">0</span>
+    👥 Visiteurs aujourd'hui : <span id="dailyCount">—</span><br>
+    🌍 Visiteurs cette année : <span id="yearlyCount">—</span>
   </div>
 
   <script>
+    // ---------- Player + Playlist + Favorites + Speed Test ----------
     const video = document.getElementById('video');
     const channelSelect = document.getElementById('channelSelect');
     const favSelect = document.getElementById('favSelect');
@@ -83,7 +87,7 @@
     const speedWarning = document.getElementById('speedWarning');
     const DEFAULT_M3U_URL = "https://gist.githubusercontent.com/RalphDarbouze/91c8a50b27b22a596e592d6f21cf004c/raw/a1e43183598fb90adccea2c67a3b09604095de19/thomassintv.m3u";
 
-    let hls, channels = [], currentChannel = null, userSpeedMbps = null;
+    let hls = null, channels = [], currentChannel = null, userSpeedMbps = null;
     let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
     const qualitySpeeds = {
@@ -97,7 +101,7 @@
       runSpeedTest();
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
-      updateVisitorCounts();
+      updateVisitorCounts(); // init counters
     };
 
     // --- Speed Test ---
@@ -141,14 +145,14 @@
 
     // --- Playlist ---
     function loadDefaultPlaylist() {
-      fetch(DEFAULT_M3U_URL)
+      fetch(DEFAULT_M3U_URL, { cache: "no-store" })
         .then(res => res.text())
         .then(parseM3U)
         .catch(err => alert("Erreur de chargement de la playlist : " + err));
     }
     function parseM3U(m3u) {
       channels = [];
-      const lines = m3u.split('\n');
+      const lines = m3u.split(/\r?\n/);
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].startsWith('#EXTINF:')) {
           const name = lines[i].split(',')[1]?.trim() || `Chaîne ${channels.length + 1}`;
@@ -182,7 +186,6 @@
         opt.textContent = `${ch.name} (${ch.quality})`;
         channelSelect.appendChild(opt);
       });
-      // auto-play first channel if available
       if (channels.length > 0) {
         channelSelect.value = 0;
         changeChannel();
@@ -196,7 +199,7 @@
       if (!channel) return;
       currentChannel = channel;
       document.getElementById('channelInfo').textContent = `🎬 Chaîne : ${channel.name} (${channel.quality})`;
-      if (hls) hls.destroy();
+      if (hls) { try { hls.destroy(); } catch(e){} }
       if (Hls.isSupported()) {
         hls = new Hls();
         hls.loadSource(channel.url);
@@ -204,7 +207,7 @@
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => video.play());
+        video.addEventListener('loadedmetadata', () => video.play(), { once: true });
       }
       updateSpeedUI();
       updateFavButton();
@@ -237,7 +240,7 @@
       if (!channel) return;
       currentChannel = channel;
       document.getElementById('channelInfo').textContent = `🎬 Favori : ${channel.name} (${channel.quality})`;
-      if (hls) hls.destroy();
+      if (hls) { try { hls.destroy(); } catch(e){} }
       if (Hls.isSupported()) {
         hls = new Hls();
         hls.loadSource(channel.url);
@@ -245,7 +248,7 @@
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => video.play());
+        video.addEventListener('loadedmetadata', () => video.play(), { once: true });
       }
       updateFavButton();
     }
@@ -255,24 +258,76 @@
       favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
     }
 
-    // --- Visitor Count (CountAPI) ---
-    async function updateVisitorCounts() {
-      const todayKey = "rubis-tv-" + new Date().toISOString().split('T')[0]; // e.g., rubis-tv-2025-08-16
-      const yearKey = "rubis-tv-" + new Date().getFullYear();               // e.g., rubis-tv-2025
+    // ---------- Visitor Count (CountAPI) ----------
+    // Namespace should be unique to YOUR site to avoid collisions.
+    const COUNT_NS = "rubis-tv-player-ralphdarbouze";
 
-      async function updateCounter(key, elementId) {
-        const url = `https://api.countapi.xyz/hit/${key}/visits`;
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-          document.getElementById(elementId).textContent = data.value;
-        } catch (e) {
-          console.error("Counter error", e);
-        }
+    // Build a YYYY-MM-DD string in LOCAL TIME (not UTC) to match your audience’s day.
+    function localDateKey() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    async function countapiGet(ns, key) {
+      const url = `https://api.countapi.xyz/get/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("get failed");
+      return res.json(); // { value }
+    }
+    async function countapiCreate(ns, key, value = 0) {
+      const url = `https://api.countapi.xyz/create?namespace=${encodeURIComponent(ns)}&key=${encodeURIComponent(key)}&value=${value}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("create failed");
+      return res.json();
+    }
+    async function countapiHit(ns, key) {
+      const url = `https://api.countapi.xyz/hit/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("hit failed");
+      return res.json(); // { value }
+    }
+
+    // Ensure the key exists; if not, create it at 0.
+    async function ensureKey(ns, key) {
+      try {
+        await countapiGet(ns, key);
+      } catch {
+        try { await countapiCreate(ns, key, 0); } catch(e) { /* ignore */ }
       }
+    }
 
-      updateCounter(todayKey, "dailyCount");
-      updateCounter(yearKey, "yearlyCount");
+    // Increment once per device per period (daily/yearly) using localStorage marks.
+    async function incrementOncePerDevice(ns, key, elementId) {
+      const markKey = `visited_${ns}_${key}`;
+      await ensureKey(ns, key);
+
+      let value;
+      if (!localStorage.getItem(markKey)) {
+        try {
+          const data = await countapiHit(ns, key);
+          value = data.value;
+          localStorage.setItem(markKey, '1');
+        } catch {
+          // fallback: read current value if hit failed
+          try { value = (await countapiGet(ns, key)).value; } catch { value = "N/A"; }
+        }
+      } else {
+        // already counted on this device, just read current value
+        try { value = (await countapiGet(ns, key)).value; } catch { value = "N/A"; }
+      }
+      const el = document.getElementById(elementId);
+      if (el) el.textContent = value;
+    }
+
+    function updateVisitorCounts() {
+      const todayKey = "day-" + localDateKey();          // e.g., day-2025-08-16 (LOCAL)
+      const yearKey  = "year-" + new Date().getFullYear(); // e.g., year-2025
+
+      incrementOncePerDevice(COUNT_NS, todayKey, "dailyCount");
+      incrementOncePerDevice(COUNT_NS, yearKey,  "yearlyCount");
     }
   </script>
 </body>
