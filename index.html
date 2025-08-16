@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -137,43 +138,31 @@
   <script>
     // ==================== PROTECTION SYSTEM ====================
     (function() {
-      // Only activate after page loads
       setTimeout(function() {
-        // 1. Basic right-click disable (less intrusive)
         document.addEventListener('contextmenu', function(e) {
-          // Only prevent if devtools are open
           const devtoolsOpen = window.outerWidth - window.innerWidth > 100 || 
                               window.outerHeight - window.innerHeight > 100;
-          if (devtoolsOpen) {
-            e.preventDefault();
-          }
+          if (devtoolsOpen) e.preventDefault();
         });
-        
-        // 2. Detect devtools opening
+
         let lastWarningTime = 0;
         const devtoolsChecker = /./;
         devtoolsChecker.toString = function() {
           const now = Date.now();
-          if (now - lastWarningTime > 2700000) { // Only warn every 30 seconds
+          if (now - lastWarningTime > 2700000) {
             lastWarningTime = now;
             document.getElementById('access-denied').style.display = 'flex';
           }
           return '';
         };
-        
-        // 3. Periodic check (less frequent)
+
         setInterval(function() {
-          // Check if devtools might be open
           const widthDiff = window.outerWidth - window.innerWidth;
           const heightDiff = window.outerHeight - window.innerHeight;
           const devtoolsOpen = widthDiff > 100 || heightDiff > 100;
-          
-          if (devtoolsOpen) {
-            console.log(devtoolsChecker); // This will trigger the warning if console is open
-          }
+          if (devtoolsOpen) console.log(devtoolsChecker);
         }, 2000);
-        
-      }, 1000); // 1 second delay before activating protections
+      }, 1000);
     })();
 
     // ==================== PLAYER FUNCTIONALITY ====================
@@ -200,13 +189,8 @@
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
       updateVisitorCounts();
-      setInterval(() => updateMinuteCount(), 60000);
     };
 
-    // [Rest of your existing player code remains exactly the same...]
-    // ... (Include all your existing player functions exactly as they were)
-    // ==============================================================
-    // --- Speed Test ---
     async function runSpeedTest() {
       const fileUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg";
       const startTime = performance.now();
@@ -246,7 +230,6 @@
       }
     }
 
-    // --- Playlist ---
     function loadDefaultPlaylist() {
       fetch(DEFAULT_M3U_URL, { cache: "no-store" })
         .then(res => res.text())
@@ -280,251 +263,186 @@
       if (lower.includes("280")) return "280p";
       if (lower.includes("240")) return "240p";
       if (lower.includes("sd")) return "SD";
-      if (lower.includes("hd")) return "HD";
-      return "Unknown";
+      return "SD";
     }
 
     function updateChannelList() {
       channelSelect.innerHTML = '';
-      channels.forEach((ch, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `${ch.name} (${ch.quality})`;
-        channelSelect.appendChild(opt);
+      channels.forEach((ch,i)=>{
+        const option = document.createElement('option');
+        option.value = i; option.textContent = ch.name;
+        channelSelect.appendChild(option);
       });
-      if (channels.length > 0) {
-        channelSelect.value = 0;
-        changeChannel();
-      }
+      if(channels.length>0) playChannel(0);
     }
 
-    // --- Change Channel ---
     function changeChannel() {
-      const index = channelSelect.value;
-      const channel = channels[index];
-      if (!channel) return;
-      currentChannel = channel;
-      document.getElementById('channelInfo').textContent = `🎬 Chaîne : ${channel.name} (${channel.quality})`;
-      if (hls) { try { hls.destroy(); } catch(e){} }
-      if (Hls.isSupported()) {
+      playChannel(parseInt(channelSelect.value));
+    }
+
+    function playChannel(idx) {
+      if(hls) hls.destroy();
+      const ch = channels[idx];
+      currentChannel = ch;
+      document.getElementById('channelInfo').textContent = `🔹 ${ch.name} | Qualité: ${ch.quality}`;
+      if(Hls.isSupported()){
         hls = new Hls();
-        hls.loadSource(channel.url);
+        hls.loadSource(ch.url);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => video.play(), { once: true });
+      } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+        video.src = ch.url; video.play();
       }
       updateSpeedUI();
-      updateFavButton();
     }
 
-    // --- Favorites ---
     function toggleFavorite() {
       if (!currentChannel) return;
       const exists = favorites.find(f => f.url === currentChannel.url);
       if (exists) {
         favorites = favorites.filter(f => f.url !== currentChannel.url);
       } else {
-        favorites.push(currentChannel);
+        favorites.push({ name: currentChannel.name, url: currentChannel.url });
       }
       localStorage.setItem("favorites", JSON.stringify(favorites));
       updateFavoritesUI();
-      updateFavButton();
     }
 
     function updateFavoritesUI() {
       favSelect.innerHTML = '';
-      favorites.forEach((ch, i) => {
+      favorites.forEach((f,i)=>{
         const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `${ch.name} (${ch.quality})`;
+        opt.value = i; opt.textContent = f.name;
         favSelect.appendChild(opt);
       });
     }
 
     function playFavorite() {
-      const channel = favorites[favSelect.value];
-      if (!channel) return;
-      currentChannel = channel;
-      document.getElementById('channelInfo').textContent = `🎬 Favori : ${channel.name} (${channel.quality})`;
-      if (hls) { try { hls.destroy(); } catch(e){} }
-      if (Hls.isSupported()) {
-        hls = new Hls();
-        hls.loadSource(channel.url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => video.play(), { once: true });
+      const idx = parseInt(favSelect.value);
+      if (favorites[idx]) {
+        const ch = favorites[idx];
+        currentChannel = ch;
+        document.getElementById('channelInfo').textContent = `⭐ ${ch.name}`;
+        if(hls) hls.destroy();
+        if(Hls.isSupported()){
+          hls = new Hls(); hls.loadSource(ch.url); hls.attachMedia(video); hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play());
+        } else if(video.canPlayType('application/vnd.apple.mpegurl')){ video.src=ch.url; video.play(); }
+        updateSpeedUI();
       }
-      updateFavButton();
     }
 
-    function updateFavButton() {
-      if (!currentChannel) return;
-      const exists = favorites.find(f => f.url === currentChannel.url);
-      favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
-    }
-
-    // ---------- Visitor Count System ----------
+    // ==================== VISITOR COUNTER ====================
     const COUNT_NS = "rubis-tv-player-ralphdarbouze";
 
-    function localDateKey() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const pad = n => n.toString().padStart(2,"0");
+
+    function getKeys() {
+      const now = new Date();
+      const minute = `minute-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}`;
+      const prevMinute = new Date(now.getTime() - 60000);
+      const prevMinuteKey = `minute-${prevMinute.getFullYear()}-${pad(prevMinute.getMonth()+1)}-${pad(prevMinute.getDate())}-${pad(prevMinute.getHours())}-${pad(prevMinute.getMinutes())}`;
+      const day = `day-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+      const month = `month-${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      const prevMonthKey = `month-${prevMonth.getFullYear()}-${pad(prevMonth.getMonth()+1)}`;
+      const year = `year-${now.getFullYear()}`;
+      const prevYear = `year-${now.getFullYear()-1}`;
+      return {minute, prevMinuteKey, day, month, prevMonthKey, year, prevYear};
     }
 
-    function localHourMinuteKey() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}-${String(d.getMinutes()).padStart(2, '0')}`;
+    async function countapiGet(key){ 
+      const res = await fetch(`https://api.countapi.xyz/get/${COUNT_NS}/${encodeURIComponent(key)}`);
+      if(!res.ok) throw new Error("get failed"); 
+      return res.json(); 
     }
 
-    function localMonthKey() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    function getPreviousMinuteKey() {
-      const d = new Date();
-      d.setMinutes(d.getMinutes() - 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}-${String(d.getMinutes()).padStart(2, '0')}`;
-    }
-
-    function getPreviousDayKey() {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
-    function getPreviousMonthKey() {
-      const d = new Date();
-      d.setMonth(d.getMonth() - 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    async function countapiGet(ns, key) {
-      const url = `https://api.countapi.xyz/get/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("get failed");
+    async function countapiCreate(key,value=0){
+      const res = await fetch(`https://api.countapi.xyz/create?namespace=${COUNT_NS}&key=${encodeURIComponent(key)}&value=${value}`);
+      if(!res.ok) throw new Error("create failed"); 
       return res.json();
     }
 
-    async function countapiCreate(ns, key, value = 0) {
-      const url = `https://api.countapi.xyz/create?namespace=${encodeURIComponent(ns)}&key=${encodeURIComponent(key)}&value=${value}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("create failed");
+    async function countapiHit(key){
+      const res = await fetch(`https://api.countapi.xyz/hit/${COUNT_NS}/${encodeURIComponent(key)}`);
+      if(!res.ok) throw new Error("hit failed"); 
       return res.json();
     }
 
-    async function countapiHit(ns, key) {
-      const url = `https://api.countapi.xyz/hit/${encodeURIComponent(ns)}/${encodeURIComponent(key)}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("hit failed");
-      return res.json();
+    async function ensureKey(key){
+      try{ await countapiGet(key); } 
+      catch{ await countapiCreate(key,0); }
     }
 
-    async function ensureKey(ns, key) {
-      try {
-        await countapiGet(ns, key);
-      } catch {
-        try { await countapiCreate(ns, key, 0); } catch(e) { console.error("CountAPI create failed:", e); }
-      }
-    }
-
-    async function incrementOncePerDevice(ns, key, elementId) {
-      const markKey = `visited_${ns}_${key}`;
-      await ensureKey(ns, key);
-
+    async function incrementOnce(key, elementId){
+      await ensureKey(key);
+      const mark = `visited_${key}`;
       let value;
-      if (!localStorage.getItem(markKey)) {
-        try {
-          const data = await countapiHit(ns, key);
+      try{
+        if(!localStorage.getItem(mark)){
+          const data = await countapiHit(key);
           value = data.value;
-          localStorage.setItem(markKey, '1');
-          animateCounter(elementId, value);
-        } catch {
-          try { 
-            const data = await countapiGet(ns, key);
-            value = data.value;
-            document.getElementById(elementId).textContent = value;
-          } catch { 
-            document.getElementById(elementId).textContent = "N/A";
-          }
+          localStorage.setItem(mark,"1");
+        } else {
+          const data = await countapiGet(key);
+          value = data.value;
         }
-      } else {
-        try { 
-          const data = await countapiGet(ns, key);
-          document.getElementById(elementId).textContent = data.value;
-        } catch { 
-          document.getElementById(elementId).textContent = "N/A";
-        }
+        animateCounter(elementId,value);
+      } catch {
+        document.getElementById(elementId).textContent = "N/A";
       }
     }
 
-    async function updateCountWithTrend(ns, key, elementId, compareKey = null) {
-      try {
-        await ensureKey(ns, key);
-        const current = await countapiGet(ns, key);
-        let trend = 'trend-neutral';
-        
-        if (compareKey) {
-          try {
-            const compare = await countapiGet(ns, compareKey);
-            trend = current.value > compare.value ? 'trend-up' : 
-                   (current.value < compare.value ? 'trend-down' : 'trend-neutral');
-          } catch {
-            // If comparison fails, just show neutral
-          }
-        }
-
-        const el = document.getElementById(elementId);
-        if (el) {
-          el.innerHTML = `${current.value.toLocaleString()} <span class="trend-icon ${trend}">${
-            trend === 'trend-up' ? '↑' : (trend === 'trend-down' ? '↓' : '→')
-          }</span>`;
-        }
-      } catch (e) {
-        const el = document.getElementById(elementId);
-        if (el) el.textContent = "N/A";
-      }
-    }
-
-    function animateCounter(elementId, target) {
-      const el = document.getElementById(elementId);
-      if (!el) return;
-      
-      const duration = 1000;
-      const start = 0;
-      const increment = target / (duration / 16);
-      
+    function animateCounter(id,target){
+      const el = document.getElementById(id);
+      if(!el) return;
+      const duration = 800;
+      const start = parseInt(el.textContent.replace(/,/g,''))||0;
+      const increment = (target-start)/(duration/16);
       let current = start;
-      const timer = setInterval(() => {
+      const timer = setInterval(()=>{
         current += increment;
-        if (current >= target) {
-          clearInterval(timer);
+        if((increment>0 && current>=target) || (increment<0 && current<=target)){
           current = target;
+          clearInterval(timer);
         }
         el.textContent = Math.floor(current).toLocaleString();
-      }, 16);
+      },16);
     }
 
-    async function updateMinuteCount() {
-      const minuteKey = "minute-" + localHourMinuteKey();
-      const prevMinuteKey = "minute-" + getPreviousMinuteKey();
-      await updateCountWithTrend(COUNT_NS, minuteKey, "minuteCount", prevMinuteKey);
+    async function updateTrend(key, compareKey, elementId){
+      try{
+        await ensureKey(key);
+        const current = await countapiGet(key);
+        let trendClass="trend-neutral";
+        if(compareKey){
+          await ensureKey(compareKey);
+          const prev = await countapiGet(compareKey);
+          trendClass = current.value>prev.value?"trend-up":current.value<prev.value?"trend-down":"trend-neutral";
+        }
+        const el = document.getElementById(elementId);
+        if(el){
+          el.innerHTML = `${current.value.toLocaleString()} <span class="trend-icon ${trendClass}">${trendClass==="trend-up"?"↑":trendClass==="trend-down"?"↓":"→"}</span>`;
+        }
+      } catch{ document.getElementById(elementId).textContent="N/A"; }
     }
 
-    function updateVisitorCounts() {
-      incrementOncePerDevice(COUNT_NS, "minute-" + localHourMinuteKey(), "minuteCount");
-      incrementOncePerDevice(COUNT_NS, "day-" + localDateKey(), "dailyCount");
-      updateCountWithTrend(COUNT_NS, "month-" + localMonthKey(), "monthlyCount", "month-" + getPreviousMonthKey());
-      updateCountWithTrend(COUNT_NS, "year-" + new Date().getFullYear(), "yearlyCount", "year-" + (new Date().getFullYear() - 1));
-      
-      // Update minute counter every minute
-      setTimeout(() => updateMinuteCount(), 60000 - (new Date().getSeconds() * 1000 + new Date().getMilliseconds()));
+    async function updateVisitorCounts(){
+      const k = getKeys();
+
+      incrementOnce(k.minute,"minuteCount");
+      incrementOnce(k.day,"dailyCount");
+      incrementOnce(k.month,"monthlyCount");
+      incrementOnce(k.year,"yearlyCount");
+
+      updateTrend(k.minute,k.prevMinuteKey,"minuteCount");
+      updateTrend(k.month,k.prevMonthKey,"monthlyCount");
+      updateTrend(k.year,k.prevYear,"yearlyCount");
+
+      setTimeout(updateVisitorCounts,60000-(new Date().getSeconds()*1000+new Date().getMilliseconds()));
     }
   </script>
+
 </body>
 </html>
+
 
