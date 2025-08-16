@@ -37,6 +37,10 @@
       margin-top: 10px; text-align: center; font-size: 1em; font-weight: bold;
     }
     #channelInfo { color: #FFD700; }
+    #visitorStats {
+      margin-top: 20px; text-align: center;
+      font-size: 1.2em; color: #FFD700;
+    }
     @media screen and (max-width: 768px) {
       h1 { font-size: 1.5em; }
       #controls { padding: 15px; }
@@ -64,6 +68,12 @@
     <div id="speedWarning"></div>
   </div>
 
+  <!-- 👥 Section visiteurs -->
+  <div id="visitorStats">
+    👥 Visiteurs aujourd'hui : <span id="dailyCount">0</span><br>
+    🌍 Visiteurs cette année : <span id="yearlyCount">0</span>
+  </div>
+
   <script>
     const video = document.getElementById('video');
     const channelSelect = document.getElementById('channelSelect');
@@ -87,6 +97,7 @@
       runSpeedTest();
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
+      updateVisitorCounts();
     };
 
     // --- Speed Test ---
@@ -243,6 +254,28 @@
       const exists = favorites.find(f => f.url === currentChannel.url);
       favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
     }
+
+    // --- Visitor Count (CountAPI) ---
+    async function updateVisitorCounts() {
+      const todayKey = "rubis-tv-" + new Date().toISOString().split('T')[0]; // e.g., rubis-tv-2025-08-16
+      const yearKey = "rubis-tv-" + new Date().getFullYear();               // e.g., rubis-tv-2025
+
+      async function updateCounter(key, elementId) {
+        const url = `https://api.countapi.xyz/hit/${key}/visits`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          document.getElementById(elementId).textContent = data.value;
+        } catch (e) {
+          console.error("Counter error", e);
+        }
+      }
+
+      updateCounter(todayKey, "dailyCount");
+      updateCounter(yearKey, "yearlyCount");
+    }
   </script>
 </body>
 </html>
+
+
