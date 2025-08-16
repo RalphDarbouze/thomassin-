@@ -6,7 +6,6 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* Your CSS unchanged */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -19,61 +18,25 @@
       align-items: center;
       min-height: 100vh;
     }
-    h1 {
-      margin-top: 20px;
-      font-size: 2em;
-      text-align: center;
-      color: #4CAF50;
-    }
-    #video-container {
-      width: 100%;
-      max-width: 1000px;
-      margin: 20px;
-    }
-    video {
-      width: 100%;
-      height: auto;
-      border: 4px solid #4CAF50;
-      border-radius: 10px;
-      background: #000;
-    }
+    h1 { margin-top: 20px; font-size: 2em; text-align: center; color: #4CAF50; }
+    #video-container { width: 100%; max-width: 1000px; margin: 20px; }
+    video { width: 100%; border: 4px solid #4CAF50; border-radius: 10px; background: #000; }
     #controls {
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 1000px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-      margin-bottom: 20px;
+      background: #1e1e1e; padding: 20px; border-radius: 10px;
+      width: 100%; max-width: 1000px; margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     select, button {
-      width: 100%;
-      max-width: 600px;
-      margin: 10px auto;
-      display: block;
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 1em;
+      width: 100%; max-width: 600px; margin: 10px auto;
+      display: block; padding: 10px; border-radius: 5px;
+      border: none; font-size: 1em;
     }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
+    button { background-color: #4CAF50; color: white; cursor: pointer; }
+    button:hover { background-color: #45a049; }
     #channelInfo, #speedTestResult, #speedWarning {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 1em;
-      font-weight: bold;
+      margin-top: 10px; text-align: center; font-size: 1em; font-weight: bold;
     }
-    #channelInfo {
-      color: #FFD700;
-    }
+    #channelInfo { color: #FFD700; }
     @media screen and (max-width: 768px) {
       h1 { font-size: 1.5em; }
       #controls { padding: 15px; }
@@ -87,78 +50,48 @@
   <div id="video-container">
     <video id="video" controls></video>
     <div id="channelInfo"></div>
+    <button id="favBtn" onclick="toggleFavorite()">⭐ Ajouter aux Favoris</button>
   </div>
 
   <div id="controls">
     <h3>Sélectionnez la chaîne</h3>
     <select id="channelSelect" onchange="changeChannel()"></select>
+
+    <h3>⭐ Favoris</h3>
+    <select id="favSelect" onchange="playFavorite()"></select>
+
     <div id="speedTestResult">⏳ Test de vitesse en cours...</div>
     <div id="speedWarning"></div>
   </div>
 
   <script>
-    // ----- Anti-DevTools & Right-click blocking -----
-    // Block right-click context menu
-    window.addEventListener('contextmenu', e => e.preventDefault());
-
-    // Block common developer tools shortcuts
-    window.addEventListener('keydown', function(e) {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === 'U')
-      ) {
-        e.preventDefault();
-        alert("L'ouverture des outils de développement est désactivée sur cette page.");
-      }
-    });
-
-    // Detect DevTools using debugger trap (works in many browsers)
-    function detectDevTools() {
-      let devtoolsOpen = false;
-      const element = new Image();
-      Object.defineProperty(element, 'id', {
-        get: function() {
-          devtoolsOpen = true;
-          alert("Les outils de développement sont ouverts. Veuillez les fermer.");
-          // Optionally you can do something here, like redirect or disable features.
-        }
-      });
-      console.log(element);
-      return devtoolsOpen;
-    }
-    setInterval(detectDevTools, 2000);
-
-    // ----- Your IPTV player code starts here -----
     const video = document.getElementById('video');
+    const channelSelect = document.getElementById('channelSelect');
+    const favSelect = document.getElementById('favSelect');
+    const favBtn = document.getElementById('favBtn');
     const speedTest = document.getElementById('speedTestResult');
     const speedWarning = document.getElementById('speedWarning');
     const DEFAULT_M3U_URL = "https://gist.githubusercontent.com/RalphDarbouze/91c8a50b27b22a596e592d6f21cf004c/raw/a1e43183598fb90adccea2c67a3b09604095de19/thomassintv.m3u";
 
-    let hls, channels = [], userSpeedMbps = null, currentChannel = null;
+    let hls, channels = [], currentChannel = null, userSpeedMbps = null;
+    let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
     const qualitySpeeds = {
-      "240p": 0.5,
-      "280p": 0.8,
-      "360p": 1.2,
-      "SD": 1.5,
-      "480p": 2,
-      "540p": 3,
-      "HD": 5,
-      "720p": 5,
-      "1080p": 8,
-      "Full HD": 8,
-      "4K": 20
+      "240p": 0.5, "280p": 0.8, "360p": 1.2, "SD": 1.5,
+      "480p": 2, "540p": 3, "HD": 5, "720p": 5, "1080p": 8,
+      "Full HD": 8, "4K": 20
     };
 
     window.onload = () => {
       loadDefaultPlaylist();
-      runSpeedTest(); // Initial test
-      setInterval(runSpeedTest, 3000); // Test every 3 sec
+      runSpeedTest();
+      setInterval(runSpeedTest, 3000);
+      updateFavoritesUI();
     };
 
+    // --- Speed Test ---
     async function runSpeedTest() {
-      const fileUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg"; // ~1MB
+      const fileUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg";
       const startTime = performance.now();
       try {
         const response = await fetch(fileUrl, { cache: "no-store" });
@@ -169,43 +102,39 @@
         userSpeedMbps = (bitsLoaded / duration / 1024 / 1024).toFixed(2);
         updateSpeedUI();
       } catch (e) {
-        userSpeedMbps = null;
         speedTest.textContent = "❌ Échec du test de vitesse";
         speedTest.style.color = "#FF6347";
-        speedWarning.textContent = '';
       }
     }
-
     function updateSpeedUI() {
+      if (!userSpeedMbps) return;
       const speed = parseFloat(userSpeedMbps);
       speedTest.textContent = `🚀 Vitesse : ${speed} Mbps`;
-
-      if (!currentChannel || !qualitySpeeds[currentChannel.quality]) {
-        speedWarning.textContent = 'ℹ️ Qualité inconnue';
-        speedTest.style.color = '#FFD700';
+      if (!currentChannel) return;
+      const required = qualitySpeeds[currentChannel.quality] || 0;
+      if (!required) {
+        speedWarning.textContent = "ℹ️ Qualité inconnue";
         return;
       }
-
-      const required = qualitySpeeds[currentChannel.quality];
       if (speed >= required) {
         speedWarning.textContent = `✅ Connexion suffisante pour ${currentChannel.quality}`;
         speedTest.style.color = '#4CAF50';
       } else if (speed >= required * 0.8) {
-        speedWarning.textContent = `⚠️ Connexion limite pour ${currentChannel.quality} (Besoin: ${required} Mbps)`;
+        speedWarning.textContent = `⚠️ Connexion limite (${currentChannel.quality})`;
         speedTest.style.color = '#FFD700';
       } else {
-        speedWarning.textContent = `🔴 Trop lent pour ${currentChannel.quality} (Besoin: ${required} Mbps)`;
+        speedWarning.textContent = `🔴 Trop lent (${currentChannel.quality})`;
         speedTest.style.color = '#FF6347';
       }
     }
 
+    // --- Playlist ---
     function loadDefaultPlaylist() {
       fetch(DEFAULT_M3U_URL)
         .then(res => res.text())
         .then(parseM3U)
         .catch(err => alert("Erreur de chargement de la playlist : " + err));
     }
-
     function parseM3U(m3u) {
       channels = [];
       const lines = m3u.split('\n');
@@ -219,7 +148,6 @@
       }
       updateChannelList();
     }
-
     function detectQuality(name) {
       const lower = name.toLowerCase();
       if (lower.includes("4k")) return "4K";
@@ -235,36 +163,28 @@
       if (lower.includes("hd")) return "HD";
       return "Unknown";
     }
-
     function updateChannelList() {
-      const select = document.getElementById('channelSelect');
-      select.innerHTML = '';
+      channelSelect.innerHTML = '';
       channels.forEach((ch, i) => {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = `${ch.name} (${ch.quality})`;
-        select.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${ch.name} (${ch.quality})`;
+        channelSelect.appendChild(opt);
       });
-      const lastIndex = localStorage.getItem("lastChannelIndex");
-      if (lastIndex && channels[lastIndex]) {
-        select.value = lastIndex;
-        changeChannel();
-      } else {
+      // auto-play first channel if available
+      if (channels.length > 0) {
+        channelSelect.value = 0;
         changeChannel();
       }
     }
 
+    // --- Change Channel ---
     function changeChannel() {
-      const index = document.getElementById('channelSelect').value;
+      const index = channelSelect.value;
       const channel = channels[index];
       if (!channel) return;
-
       currentChannel = channel;
-      localStorage.setItem("lastChannelIndex", index);
       document.getElementById('channelInfo').textContent = `🎬 Chaîne : ${channel.name} (${channel.quality})`;
-
-      updateSpeedUI();
-
       if (hls) hls.destroy();
       if (Hls.isSupported()) {
         hls = new Hls();
@@ -274,12 +194,55 @@
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = channel.url;
         video.addEventListener('loadedmetadata', () => video.play());
-      } else {
-        alert("HLS non pris en charge.");
       }
+      updateSpeedUI();
+      updateFavButton();
+    }
+
+    // --- Favorites ---
+    function toggleFavorite() {
+      if (!currentChannel) return;
+      const exists = favorites.find(f => f.url === currentChannel.url);
+      if (exists) {
+        favorites = favorites.filter(f => f.url !== currentChannel.url);
+      } else {
+        favorites.push(currentChannel);
+      }
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      updateFavoritesUI();
+      updateFavButton();
+    }
+    function updateFavoritesUI() {
+      favSelect.innerHTML = '';
+      favorites.forEach((ch, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${ch.name} (${ch.quality})`;
+        favSelect.appendChild(opt);
+      });
+    }
+    function playFavorite() {
+      const channel = favorites[favSelect.value];
+      if (!channel) return;
+      currentChannel = channel;
+      document.getElementById('channelInfo').textContent = `🎬 Favori : ${channel.name} (${channel.quality})`;
+      if (hls) hls.destroy();
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(channel.url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = channel.url;
+        video.addEventListener('loadedmetadata', () => video.play());
+      }
+      updateFavButton();
+    }
+    function updateFavButton() {
+      if (!currentChannel) return;
+      const exists = favorites.find(f => f.url === currentChannel.url);
+      favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
     }
   </script>
 </body>
 </html>
-
-
