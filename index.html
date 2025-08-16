@@ -80,9 +80,33 @@
       .visitorStat { font-size: 0.8em; gap: 4px; }
       .visitorStat span { min-width: 30px; padding: 1px 6px; }
     }
+    #access-denied {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
+
+  <div id="access-denied">
+    <h1 style="color: #FF6347;">ECOLE DES RUBIS</h1>
+    <p>Ceci est une courtoisie de l'École Des Rubis. Retrouvez-nous sur www.ecoledesrubis.com.</p>
+    <button onclick="document.getElementById('access-denied').style.display='none'" 
+            style="padding: 10px 20px; background: #4CAF50; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer;">
+      Cliquez sur ce bouton pour revenir à votre chaîne
+    </button>
+  </div>
 
   <h1>📺 RUBIS TV PLAYER</h1>
 
@@ -103,7 +127,6 @@
     <div id="speedWarning"></div>
   </div>
 
-  <!-- Enhanced Visitor Stats -->
   <div id="visitorStats">
     <div class="visitorStat">🕒 Minute: <span id="minuteCount">—</span></div>
     <div class="visitorStat">👥 Aujourd'hui: <span id="dailyCount">—</span></div>
@@ -112,7 +135,48 @@
   </div>
 
   <script>
-    // ---------- Player + Playlist + Favorites + Speed Test ----------
+    // ==================== PROTECTION SYSTEM ====================
+    (function() {
+      // Only activate after page loads
+      setTimeout(function() {
+        // 1. Basic right-click disable (less intrusive)
+        document.addEventListener('contextmenu', function(e) {
+          // Only prevent if devtools are open
+          const devtoolsOpen = window.outerWidth - window.innerWidth > 100 || 
+                              window.outerHeight - window.innerHeight > 100;
+          if (devtoolsOpen) {
+            e.preventDefault();
+          }
+        });
+        
+        // 2. Detect devtools opening
+        let lastWarningTime = 0;
+        const devtoolsChecker = /./;
+        devtoolsChecker.toString = function() {
+          const now = Date.now();
+          if (now - lastWarningTime > 2700000) { // Only warn every 30 seconds
+            lastWarningTime = now;
+            document.getElementById('access-denied').style.display = 'flex';
+          }
+          return '';
+        };
+        
+        // 3. Periodic check (less frequent)
+        setInterval(function() {
+          // Check if devtools might be open
+          const widthDiff = window.outerWidth - window.innerWidth;
+          const heightDiff = window.outerHeight - window.innerHeight;
+          const devtoolsOpen = widthDiff > 100 || heightDiff > 100;
+          
+          if (devtoolsOpen) {
+            console.log(devtoolsChecker); // This will trigger the warning if console is open
+          }
+        }, 2000);
+        
+      }, 1000); // 1 second delay before activating protections
+    })();
+
+    // ==================== PLAYER FUNCTIONALITY ====================
     const video = document.getElementById('video');
     const channelSelect = document.getElementById('channelSelect');
     const favSelect = document.getElementById('favSelect');
@@ -136,10 +200,12 @@
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
       updateVisitorCounts();
-      // Update minute counter every minute
       setInterval(() => updateMinuteCount(), 60000);
     };
 
+    // [Rest of your existing player code remains exactly the same...]
+    // ... (Include all your existing player functions exactly as they were)
+    // ==============================================================
     // --- Speed Test ---
     async function runSpeedTest() {
       const fileUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg";
@@ -157,6 +223,7 @@
         speedTest.style.color = "#FF6347";
       }
     }
+
     function updateSpeedUI() {
       if (!userSpeedMbps) return;
       const speed = parseFloat(userSpeedMbps);
@@ -186,6 +253,7 @@
         .then(parseM3U)
         .catch(err => alert("Erreur de chargement de la playlist : " + err));
     }
+
     function parseM3U(m3u) {
       channels = [];
       const lines = m3u.split(/\r?\n/);
@@ -199,6 +267,7 @@
       }
       updateChannelList();
     }
+
     function detectQuality(name) {
       const lower = name.toLowerCase();
       if (lower.includes("4k")) return "4K";
@@ -214,6 +283,7 @@
       if (lower.includes("hd")) return "HD";
       return "Unknown";
     }
+
     function updateChannelList() {
       channelSelect.innerHTML = '';
       channels.forEach((ch, i) => {
@@ -262,6 +332,7 @@
       updateFavoritesUI();
       updateFavButton();
     }
+
     function updateFavoritesUI() {
       favSelect.innerHTML = '';
       favorites.forEach((ch, i) => {
@@ -271,6 +342,7 @@
         favSelect.appendChild(opt);
       });
     }
+
     function playFavorite() {
       const channel = favorites[favSelect.value];
       if (!channel) return;
@@ -288,13 +360,14 @@
       }
       updateFavButton();
     }
+
     function updateFavButton() {
       if (!currentChannel) return;
       const exists = favorites.find(f => f.url === currentChannel.url);
       favBtn.textContent = exists ? "❌ Retirer des Favoris" : "⭐ Ajouter aux Favoris";
     }
 
-    // ---------- Enhanced Visitor Count System ----------
+    // ---------- Visitor Count System ----------
     const COUNT_NS = "rubis-tv-player-ralphdarbouze";
 
     function localDateKey() {
