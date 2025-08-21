@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -19,7 +21,7 @@
       min-height: 100vh;
     }
     h1 { margin-top: 20px; font-size: 2em; text-align: center; color: #4CAF50; }
-    #video-container { width: 100%; max-width: 1000px; margin: 20px; }
+    #video-container { width: 100%; max-width: 1000px; margin: 20px; position: relative; }
     video { width: 100%; border: 4px solid #4CAF50; border-radius: 10px; background: #000; }
     #controls {
       background: #1e1e1e; padding: 20px; border-radius: 10px;
@@ -96,6 +98,19 @@
       color: white;
       text-align: center;
     }
+    /* Floating Total Visits Badge */
+    #totalBadge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(76, 175, 80, 0.9);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9em;
+      color: #fff;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -115,6 +130,8 @@
     <video id="video" controls></video>
     <div id="channelInfo"></div>
     <button id="favBtn" onclick="toggleFavorite()">⭐ Ajouter aux Favoris</button>
+    <!-- Floating Total Visits Badge -->
+    <div id="totalBadge">🌐 Total Visits: <span id="totalCount">—</span></div>
   </div>
 
   <div id="controls">
@@ -189,8 +206,10 @@
       setInterval(runSpeedTest, 3000);
       updateFavoritesUI();
       updateVisitorCounts();
+      updateTotalVisits(); // call the new total visits counter
     };
 
+    // ==================== SPEED TEST ====================
     async function runSpeedTest() {
       const fileUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg";
       const startTime = performance.now();
@@ -230,6 +249,7 @@
       }
     }
 
+    // ==================== PLAYER FUNCTIONS ====================
     function loadDefaultPlaylist() {
       fetch(DEFAULT_M3U_URL, { cache: "no-store" })
         .then(res => res.text())
@@ -276,9 +296,7 @@
       if(channels.length>0) playChannel(0);
     }
 
-    function changeChannel() {
-      playChannel(parseInt(channelSelect.value));
-    }
+    function changeChannel() { playChannel(parseInt(channelSelect.value)); }
 
     function playChannel(idx) {
       if(hls) hls.destroy();
@@ -339,115 +357,6 @@
     function getKeys() {
       const now = new Date();
       const minute = `minute-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}`;
-      const prevMinute = new Date(now.getTime() - 60000);
-      const prevMinuteKey = `minute-${prevMinute.getFullYear()}-${pad(prevMinute.getMonth()+1)}-${pad(prevMinute.getDate())}-${pad(prevMinute.getHours())}-${pad(prevMinute.getMinutes())}`;
-      const day = `day-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-      const month = `month-${now.getFullYear()}-${pad(now.getMonth()+1)}`;
-      const prevMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
-      const prevMonthKey = `month-${prevMonth.getFullYear()}-${pad(prevMonth.getMonth()+1)}`;
-      const year = `year-${now.getFullYear()}`;
-      const prevYear = `year-${now.getFullYear()-1}`;
-      return {minute, prevMinuteKey, day, month, prevMonthKey, year, prevYear};
-    }
-
-    async function countapiGet(key){ 
-      const res = await fetch(`https://api.countapi.xyz/get/${COUNT_NS}/${encodeURIComponent(key)}`);
-      if(!res.ok) throw new Error("get failed"); 
-      return res.json(); 
-    }
-
-    async function countapiCreate(key,value=0){
-      const res = await fetch(`https://api.countapi.xyz/create?namespace=${COUNT_NS}&key=${encodeURIComponent(key)}&value=${value}`);
-      if(!res.ok) throw new Error("create failed"); 
-      return res.json();
-    }
-
-    async function countapiHit(key){
-      const res = await fetch(`https://api.countapi.xyz/hit/${COUNT_NS}/${encodeURIComponent(key)}`);
-      if(!res.ok) throw new Error("hit failed"); 
-      return res.json();
-    }
-
-    async function ensureKey(key){
-      try{ await countapiGet(key); } 
-      catch{ await countapiCreate(key,0); }
-    }
-
-    async function incrementOnce(key, elementId){
-      await ensureKey(key);
-      const mark = `visited_${key}`;
-      let value;
-      try{
-        if(!localStorage.getItem(mark)){
-          const data = await countapiHit(key);
-          value = data.value;
-          localStorage.setItem(mark,"1");
-        } else {
-          const data = await countapiGet(key);
-          value = data.value;
-        }
-        animateCounter(elementId,value);
-      } catch {
-        document.getElementById(elementId).textContent = "N/A";
-      }
-    }
-
-    function animateCounter(id,target){
-      const el = document.getElementById(id);
-      if(!el) return;
-      const duration = 800;
-      const start = parseInt(el.textContent.replace(/,/g,''))||0;
-      const increment = (target-start)/(duration/16);
-      let current = start;
-      const timer = setInterval(()=>{
-        current += increment;
-        if((increment>0 && current>=target) || (increment<0 && current<=target)){
-          current = target;
-          clearInterval(timer);
-        }
-        el.textContent = Math.floor(current).toLocaleString();
-      },16);
-    }
-
-    async function updateTrend(key, compareKey, elementId){
-      try{
-        await ensureKey(key);
-        const current = await countapiGet(key);
-        let trendClass="trend-neutral";
-        if(compareKey){
-          await ensureKey(compareKey);
-          const prev = await countapiGet(compareKey);
-          trendClass = current.value>prev.value?"trend-up":current.value<prev.value?"trend-down":"trend-neutral";
-        }
-        const el = document.getElementById(elementId);
-        if(el){
-          el.innerHTML = `${current.value.toLocaleString()} <span class="trend-icon ${trendClass}">${trendClass==="trend-up"?"↑":trendClass==="trend-down"?"↓":"→"}</span>`;
-        }
-      } catch{ document.getElementById(elementId).textContent="N/A"; }
-    }
-
-    async function updateVisitorCounts(){
-      const k = getKeys();
-
-      incrementOnce(k.minute,"minuteCount");
-      incrementOnce(k.day,"dailyCount");
-      incrementOnce(k.month,"monthlyCount");
-      incrementOnce(k.year,"yearlyCount");
-
-      updateTrend(k.minute,k.prevMinuteKey,"minuteCount");
-      updateTrend(k.month,k.prevMonthKey,"monthlyCount");
-      updateTrend(k.year,k.prevYear,"yearlyCount");
-
-      setTimeout(updateVisitorCounts,60000-(new Date().getSeconds()*1000+new Date().getMilliseconds()));
-    }
-  </script>
-
-  <!-- hitwebcounter Code START -->
-<a href="https://www.hitwebcounter.com" target="_blank">
-<img src="https://hitwebcounter.com/counter/counter.php?page=21434203&style=0005&nbdigits=9&type=page&initCount=0" title="hitwebcounter.com" Alt="Hitwebcounter Tools"   border="0" /></a> 
-
-</body>
-</html>
-
+      const prevMinute = new Date(now.getTime
 
 
