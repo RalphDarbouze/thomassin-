@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RUBIS TV 2026 - Clean Fullscreen</title>
+    <title>RUBIS TV 2026 - Advanced Buffering Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -102,26 +102,26 @@
             font-size: 12px;
         }
         
-        /* Quality Selector in Top Bar */
-        .quality-selector {
+        /* Buffer Control in Top Bar */
+        .buffer-control {
             background: rgba(40, 40, 40, 0.8);
             border-radius: 4px;
             padding: 6px 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .quality-label {
+        .buffer-label {
             font-size: 11px;
             color: #888;
             margin-bottom: 4px;
         }
         
-        .quality-buttons {
+        .buffer-buttons {
             display: flex;
             gap: 4px;
         }
         
-        .quality-btn {
+        .buffer-btn {
             padding: 4px 8px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -132,11 +132,11 @@
             transition: all 0.2s;
         }
         
-        .quality-btn:hover {
+        .buffer-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
         
-        .quality-btn.active {
+        .buffer-btn.active {
             background: #4CAF50;
             border-color: #4CAF50;
         }
@@ -304,45 +304,52 @@
             height: 100%;
             object-fit: contain;
             outline: none;
+            background: #000;
         }
         
-        /* Fullscreen Button - Made more subtle */
-        .fullscreen-toggle {
+        /* Fullscreen Button - FIXED POSITION */
+        .fullscreen-btn {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
-            z-index: 15;
-            background: rgba(0, 0, 0, 0.4);
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-            opacity: 0.5;
-            backdrop-filter: blur(2px);
-        }
-        
-        .fullscreen-toggle:hover {
-            background: rgba(0, 0, 0, 0.7);
-            opacity: 0.9;
-            transform: scale(1.1);
             color: white;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+            opacity: 0.7;
         }
         
-        /* Buffering Overlay */
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .fullscreen-btn .fullscreen-in {
+            display: block;
+        }
+        
+        .fullscreen-btn .fullscreen-out {
+            display: none;
+        }
+        
+        /* Advanced Buffering Overlay */
         .buffering-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -377,9 +384,9 @@
         
         .buffering-progress {
             width: 300px;
-            height: 6px;
+            height: 10px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            border-radius: 5px;
             overflow: hidden;
             margin-top: 15px;
         }
@@ -418,7 +425,44 @@
             line-height: 1.4;
         }
         
-        /* Player Overlay - Made more transparent */
+        /* Buffer Stats Display */
+        .buffer-stats-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 200px;
+            z-index: 15;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .buffer-stats-title {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .buffer-stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        
+        .buffer-stat-label {
+            color: #aaa;
+        }
+        
+        .buffer-stat-value {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+        
+        /* Player Overlay */
         .player-overlay {
             position: absolute;
             top: 0;
@@ -439,7 +483,7 @@
             pointer-events: all;
         }
         
-        /* Channel Info Overlay - Made transparent */
+        /* Channel Info Overlay */
         .channel-info-overlay {
             background: rgba(0, 0, 0, 0.6);
             padding: 10px 20px;
@@ -474,7 +518,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
         
-        /* Player Controls - Made more transparent */
+        /* Player Controls */
         .player-controls {
             display: flex;
             align-items: center;
@@ -531,6 +575,14 @@
         
         .control-btn.play-pause:hover {
             background: rgba(76, 175, 80, 0.8);
+        }
+        
+        .control-btn.buffer-btn {
+            background: rgba(33, 150, 243, 0.6);
+        }
+        
+        .control-btn.buffer-btn:hover {
+            background: rgba(33, 150, 243, 0.8);
         }
         
         .volume-control {
@@ -729,60 +781,72 @@
             outline-offset: 2px;
         }
         
-        /* Fullscreen Mode Styles - UPDATED for borderless fullscreen */
+        /* Fullscreen Mode Styles - FIXED */
         body.fullscreen-mode {
-            overflow: hidden;
+            overflow: hidden !important;
             padding: 0 !important;
+            margin: 0 !important;
         }
         
         body.fullscreen-mode .app-container {
-            background: #000;
-            width: 100vw;
-            height: 100vh;
-            max-width: 100vw;
-            max-height: 100vh;
+            background: #000 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
         }
         
         body.fullscreen-mode .top-bar,
         body.fullscreen-mode .channel-sidebar,
         body.fullscreen-mode .info-panel {
-            display: none;
+            display: none !important;
         }
         
         body.fullscreen-mode .player-area {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 9999;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
         }
         
         body.fullscreen-mode #video-player {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-            display: block;
+            object-fit: contain !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+            background: #000 !important;
         }
         
-        body.fullscreen-mode .fullscreen-toggle {
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.4);
-            width: 40px;
-            height: 40px;
-            font-size: 16px;
+        body.fullscreen-mode .fullscreen-btn {
+            bottom: 30px !important;
+            right: 30px !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            width: 60px !important;
+            height: 60px !important;
+            font-size: 20px !important;
+            opacity: 0.8 !important;
         }
         
-        body.fullscreen-mode .fullscreen-toggle .fullscreen-in {
-            display: none;
+        body.fullscreen-mode .fullscreen-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.1) !important;
         }
         
-        body.fullscreen-mode .fullscreen-toggle .fullscreen-out {
-            display: block;
+        body.fullscreen-mode .fullscreen-btn .fullscreen-in {
+            display: none !important;
         }
         
-        .fullscreen-toggle .fullscreen-out {
+        body.fullscreen-mode .fullscreen-btn .fullscreen-out {
+            display: block !important;
+        }
+        
+        /* Fullscreen button icons */
+        .fullscreen-btn .fullscreen-out {
             display: none;
         }
         
@@ -801,6 +865,11 @@
             margin-bottom: 15px;
         }
         
+        body.fullscreen-mode .buffer-stats-display {
+            top: 15px !important;
+            right: 15px !important;
+        }
+        
         /* Ensure no borders on mobile/desktop */
         @media (display-mode: fullscreen) {
             body.fullscreen-mode .player-area {
@@ -809,7 +878,7 @@
             }
             
             body.fullscreen-mode #video-player {
-                object-fit: contain;
+                object-fit: contain !important;
             }
         }
         
@@ -868,6 +937,13 @@
             .current-channel-group {
                 font-size: 10px;
             }
+            
+            .fullscreen-btn {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                right: 15px;
+            }
         }
         
         /* Hide overlay elements after a delay in fullscreen */
@@ -884,8 +960,8 @@
         <div class="buffering-spinner"></div>
         <div style="text-align: center;">
             <h3 style="margin-bottom: 10px; color: #4CAF50;">RUBIS TV 2026</h3>
-            <p style="color: #666; font-size: 13px;">Initializing Player...</p>
-            <p style="color: #888; font-size: 12px; margin-top: 10px;">Optimizing for smooth playback</p>
+            <p style="color: #666; font-size: 13px;">Initializing Advanced Buffer System...</p>
+            <p style="color: #888; font-size: 12px; margin-top: 10px;">10-Second Smart Buffering Enabled</p>
         </div>
     </div>
     
@@ -898,7 +974,7 @@
                 <div class="logo-text">RUBIS TV <span class="logo-year">2026</span></div>
             </div>
             
-            <!-- Moved Network & Quality to Top Bar -->
+            <!-- Buffer Control in Top Bar -->
             <div class="top-controls">
                 <div class="network-status" id="networkStatus">
                     <i class="fas fa-wifi network-icon"></i>
@@ -907,13 +983,13 @@
                     </div>
                 </div>
                 
-                <div class="quality-selector" id="qualitySelector">
-                    <div class="quality-label">QUALITY</div>
-                    <div class="quality-buttons">
-                        <button class="quality-btn active" data-quality="auto">Auto</button>
-                        <button class="quality-btn" data-quality="high">High</button>
-                        <button class="quality-btn" data-quality="medium">Medium</button>
-                        <button class="quality-btn" data-quality="low">Low</button>
+                <div class="buffer-control" id="bufferControl">
+                    <div class="buffer-label">BUFFER</div>
+                    <div class="buffer-buttons">
+                        <button class="buffer-btn active" data-buffer="5">5s</button>
+                        <button class="buffer-btn" data-buffer="10">10s</button>
+                        <button class="buffer-btn" data-buffer="15">15s</button>
+                        <button class="buffer-btn" data-buffer="20">20s</button>
                     </div>
                 </div>
             </div>
@@ -943,26 +1019,47 @@
             
             <!-- Video Player Area -->
             <div class="player-area">
-                <video id="video-player" playsinline preload="auto"></video>
+                <video id="video-player" playsinline preload="auto" crossorigin="anonymous"></video>
                 
-                <!-- Fullscreen Toggle Button -->
-                <button class="fullscreen-toggle" id="fullscreenToggle" title="Toggle Fullscreen (F)">
+                <!-- FIXED FULLSCREEN BUTTON -->
+                <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen (F)">
                     <i class="fas fa-expand fullscreen-in"></i>
                     <i class="fas fa-compress fullscreen-out"></i>
                 </button>
                 
-                <!-- Buffering Overlay -->
+                <!-- Buffer Stats Display -->
+                <div class="buffer-stats-display" id="bufferStats">
+                    <div class="buffer-stats-title">🔋 BUFFER STATUS</div>
+                    <div class="buffer-stat-item">
+                        <span class="buffer-stat-label">Buffer Time:</span>
+                        <span class="buffer-stat-value" id="currentBufferTime">0s</span>
+                    </div>
+                    <div class="buffer-stat-item">
+                        <span class="buffer-stat-label">Buffer Progress:</span>
+                        <span class="buffer-stat-value" id="bufferProgress">0%</span>
+                    </div>
+                    <div class="buffer-stat-item">
+                        <span class="buffer-stat-label">Network Speed:</span>
+                        <span class="buffer-stat-value" id="liveNetworkSpeed">0 Mbps</span>
+                    </div>
+                    <div class="buffer-stat-item">
+                        <span class="buffer-stat-label">Status:</span>
+                        <span class="buffer-stat-value" id="bufferStatus">Idle</span>
+                    </div>
+                </div>
+                
+                <!-- Advanced Buffering Overlay -->
                 <div class="buffering-overlay" id="bufferingOverlay">
                     <div class="buffering-spinner"></div>
-                    <div class="buffering-text" id="bufferingText">Buffering Stream</div>
+                    <div class="buffering-text" id="bufferingText">Smart Buffering System</div>
                     <div class="buffering-progress">
                         <div class="buffering-progress-fill" id="bufferingProgressFill"></div>
                     </div>
-                    <div class="buffering-timer" id="bufferingTimer">Pre-buffering: 0/5s</div>
+                    <div class="buffering-timer" id="bufferingTimer">Pre-buffering: 0/10s</div>
                     
                     <div class="buffer-warning">
-                        <h4><i class="fas fa-info-circle"></i> Optimal Streaming</h4>
-                        <p>Pre-buffering 5 seconds of video to prevent lag. This ensures smooth playback even with network fluctuations.</p>
+                        <h4><i class="fas fa-shield-alt"></i> Advanced Lag Prevention</h4>
+                        <p>10-second pre-buffer ensures smooth playback. System adapts to your network speed automatically.</p>
                     </div>
                 </div>
                 
@@ -990,6 +1087,9 @@
                             </button>
                             <button class="control-btn" id="nextChannel" title="Next Channel (Down)">
                                 <i class="fas fa-step-forward"></i>
+                            </button>
+                            <button class="control-btn buffer-btn" id="manualBufferBtn" title="Manual Buffer (B)">
+                                <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
                         
@@ -1036,8 +1136,8 @@
                             <span class="stat-value" id="bitrate">0 kbps</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Quality:</span>
-                            <span class="stat-value" id="currentQuality">Auto</span>
+                            <span class="stat-label">Buffer Mode:</span>
+                            <span class="stat-value" id="bufferMode">Adaptive</span>
                         </div>
                     </div>
                 </div>
@@ -1045,7 +1145,7 @@
                 <!-- Performance Info -->
                 <div class="panel-section">
                     <div class="panel-title">
-                        <i class="fas fa-tachometer-alt"></i> PERFORMANCE
+                        <i class="fas fa-tachometer-alt"></i> BUFFER PERFORMANCE
                     </div>
                     <div class="buffer-stats">
                         <div class="stat-item">
@@ -1053,12 +1153,12 @@
                             <span class="stat-value" id="performanceSpeed">Testing...</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Buffer Strategy:</span>
-                            <span class="stat-value" id="bufferStrategy">Pre-buffering</span>
+                            <span class="stat-label">Target Buffer:</span>
+                            <span class="stat-value" id="targetBuffer">10s</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Video Cache:</span>
-                            <span class="stat-value" id="videoCache">0 MB</span>
+                            <span class="stat-label">Current Buffer:</span>
+                            <span class="stat-value" id="currentBuffer">0s</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Lag Prevention:</span>
@@ -1070,15 +1170,15 @@
                 <!-- Remote Guide -->
                 <div class="panel-section">
                     <div class="panel-title">
-                        <i class="fas fa-gamepad"></i> CONTROLS
+                        <i class="fas fa-gamepad"></i> BUFFER CONTROLS
                     </div>
                     <div style="font-size: 12px; color: #888; line-height: 1.4;">
+                        <p>B Manual Buffer</p>
+                        <p>1-4 Buffer presets</p>
                         <p>↑↓ Navigate channels</p>
-                        <p>←→ Adjust volume</p>
-                        <p>ENTER Select channel</p>
                         <p>SPACE Play/Pause</p>
                         <p>F Fullscreen</p>
-                        <p>Q Change quality</p>
+                        <p>ESC Show/Hide panels</p>
                     </div>
                 </div>
             </div>
@@ -1086,7 +1186,277 @@
     </div>
 
     <script>
-        // App State with Buffering
+        // ==================== SIMPLIFIED BUFFER SYSTEM ====================
+        const SimpleBuffer = {
+            targetBufferSeconds: 10,
+            isBuffering: false,
+            bufferTimer: null,
+            currentBufferSeconds: 0,
+            
+            init() {
+                console.log('🔄 Simple Buffer System Initialized');
+            },
+            
+            start(channel) {
+                if (!channel || !channel.url) return false;
+                
+                console.log(`🚀 Starting buffer for: ${channel.name}`);
+                
+                // Stop any existing buffer
+                this.stop();
+                
+                // Reset state
+                this.isBuffering = true;
+                this.currentBufferSeconds = 0;
+                
+                // Update UI
+                this.showBufferUI(true, `Buffering ${this.targetBufferSeconds}s...`);
+                this.updateBufferStatus('Buffering');
+                
+                // Clear video source first
+                videoPlayer.src = '';
+                videoPlayer.load();
+                
+                // Small delay before setting new source
+                setTimeout(() => {
+                    // Set video source - FIX: Don't use preload
+                    videoPlayer.src = channel.url;
+                    
+                    // Set important attributes for IPTV streams
+                    videoPlayer.crossOrigin = "anonymous";
+                    videoPlayer.preload = "none"; // Changed from "auto"
+                    
+                    // Load the video
+                    videoPlayer.load();
+                    
+                    // Start buffer monitoring
+                    this.startBufferMonitoring();
+                    
+                }, 100);
+                
+                return true;
+            },
+            
+            startBufferMonitoring() {
+                // Clear any existing timer
+                if (this.bufferTimer) clearInterval(this.bufferTimer);
+                
+                let bufferStartTime = Date.now();
+                let hasVideoData = false;
+                
+                this.bufferTimer = setInterval(() => {
+                    const elapsed = (Date.now() - bufferStartTime) / 1000;
+                    
+                    // Calculate actual buffer from video element
+                    if (videoPlayer.buffered.length > 0) {
+                        const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+                        this.currentBufferSeconds = bufferEnd - videoPlayer.currentTime;
+                        hasVideoData = true;
+                        
+                        // Calculate progress based on actual buffer
+                        const bufferProgress = Math.min(this.currentBufferSeconds / this.targetBufferSeconds, 1);
+                        const progressPercent = Math.round(bufferProgress * 100);
+                        
+                        document.getElementById('bufferingProgressFill').style.width = `${progressPercent}%`;
+                        document.getElementById('bufferingTimer').textContent = 
+                            `Buffer: ${this.currentBufferSeconds.toFixed(1)}/${this.targetBufferSeconds}s`;
+                        
+                        document.getElementById('currentBufferTime').textContent = `${this.currentBufferSeconds.toFixed(1)}s`;
+                        document.getElementById('bufferProgress').textContent = `${progressPercent}%`;
+                        document.getElementById('bufferTime').textContent = `${this.currentBufferSeconds.toFixed(1)}s`;
+                        document.getElementById('currentBuffer').textContent = `${this.currentBufferSeconds.toFixed(1)}s`;
+                        
+                        // Check if we have enough buffer
+                        if (this.currentBufferSeconds >= this.targetBufferSeconds) {
+                            this.complete();
+                        }
+                        
+                        // If video has dimensions, it means video is decoding
+                        if (videoPlayer.videoWidth > 0 && !videoPlayer.paused) {
+                            this.complete();
+                        }
+                    } else {
+                        // Fallback to time-based progress
+                        const bufferProgress = Math.min(elapsed / this.targetBufferSeconds, 1);
+                        const progressPercent = Math.round(bufferProgress * 100);
+                        
+                        document.getElementById('bufferingProgressFill').style.width = `${progressPercent}%`;
+                        document.getElementById('bufferingTimer').textContent = 
+                            `Loading: ${elapsed.toFixed(1)}/${this.targetBufferSeconds}s`;
+                        
+                        // If it's taking too long, try to play anyway
+                        if (elapsed >= 5 && !hasVideoData) {
+                            this.complete();
+                        }
+                    }
+                }, 500);
+                
+                // Add video event listeners
+                videoPlayer.addEventListener('loadeddata', this.handleLoadedData.bind(this));
+                videoPlayer.addEventListener('canplay', this.handleCanPlay.bind(this));
+                videoPlayer.addEventListener('error', this.handleVideoError.bind(this));
+                videoPlayer.addEventListener('playing', this.handlePlaying.bind(this));
+            },
+            
+            handleLoadedData() {
+                console.log('✅ Video data loaded');
+                // If we have video data, we can complete faster
+                if (videoPlayer.videoWidth > 0) {
+                    this.complete();
+                }
+            },
+            
+            handleCanPlay() {
+                console.log('✅ Video can play');
+                this.complete();
+            },
+            
+            handleVideoError() {
+                console.error('❌ Video error:', videoPlayer.error);
+                this.showBufferUI(false);
+                this.updateBufferStatus('Error');
+                document.getElementById('streamStatus').textContent = 'Error';
+                document.getElementById('streamStatus').style.color = '#F44336';
+                
+                // Try direct play without buffer
+                if (state.currentChannelIndex >= 0) {
+                    const channel = state.filteredChannels[state.currentChannelIndex];
+                    this.directPlay(channel);
+                }
+            },
+            
+            handlePlaying() {
+                console.log('▶️ Video started playing');
+                this.isBuffering = false;
+                this.showBufferUI(false);
+                this.updateBufferStatus('Playing');
+            },
+            
+            directPlay(channel) {
+                console.log('🔄 Trying direct play...');
+                this.showBufferUI(true, 'Trying direct playback...');
+                
+                videoPlayer.src = channel.url;
+                videoPlayer.crossOrigin = "anonymous";
+                videoPlayer.preload = "auto";
+                
+                // Try to play immediately
+                videoPlayer.play().then(() => {
+                    console.log('✅ Direct play successful');
+                    this.isBuffering = false;
+                    this.showBufferUI(false);
+                    state.isPlaying = true;
+                    updatePlayPauseButton();
+                    document.getElementById('streamStatus').textContent = 'Live';
+                    document.getElementById('streamStatus').style.color = '#4CAF50';
+                }).catch(error => {
+                    console.error('❌ Direct play failed:', error);
+                    this.showBufferUI(false);
+                });
+            },
+            
+            complete() {
+                if (!this.isBuffering) return;
+                
+                console.log(`✅ Buffer complete, trying to play...`);
+                
+                this.isBuffering = false;
+                clearInterval(this.bufferTimer);
+                
+                // Try to play
+                videoPlayer.play().then(() => {
+                    console.log('▶️ Playback started successfully');
+                    this.showBufferUI(false);
+                    this.updateBufferStatus('Playing');
+                    state.isPlaying = true;
+                    updatePlayPauseButton();
+                    document.getElementById('streamStatus').textContent = 'Live';
+                    document.getElementById('streamStatus').style.color = '#4CAF50';
+                    
+                }).catch(error => {
+                    console.error('❌ Play failed, trying fallback:', error);
+                    // If play fails, just hide buffer and let user click play
+                    this.showBufferUI(false);
+                    this.updateBufferStatus('Ready');
+                });
+                
+                // Remove event listeners
+                videoPlayer.removeEventListener('loadeddata', this.handleLoadedData);
+                videoPlayer.removeEventListener('canplay', this.handleCanPlay);
+                videoPlayer.removeEventListener('error', this.handleVideoError);
+                videoPlayer.removeEventListener('playing', this.handlePlaying);
+            },
+            
+            showBufferUI(show, text = null) {
+                const bufferingOverlay = document.getElementById('bufferingOverlay');
+                const bufferingText = document.getElementById('bufferingText');
+                
+                if (show) {
+                    bufferingOverlay.classList.add('active');
+                    bufferingText.textContent = text || 'Buffering...';
+                    document.getElementById('streamStatus').textContent = 'Buffering';
+                    document.getElementById('streamStatus').style.color = '#FF9800';
+                } else {
+                    bufferingOverlay.classList.remove('active');
+                }
+            },
+            
+            updateBufferStatus(status) {
+                const bufferStatusEl = document.getElementById('bufferStatus');
+                bufferStatusEl.textContent = status;
+                
+                switch(status) {
+                    case 'Buffering':
+                        bufferStatusEl.style.color = '#FF9800';
+                        break;
+                    case 'Playing':
+                        bufferStatusEl.style.color = '#4CAF50';
+                        break;
+                    case 'Ready':
+                        bufferStatusEl.style.color = '#2196F3';
+                        break;
+                    case 'Error':
+                        bufferStatusEl.style.color = '#F44336';
+                        break;
+                    default:
+                        bufferStatusEl.style.color = '#aaa';
+                }
+            },
+            
+            stop() {
+                this.isBuffering = false;
+                if (this.bufferTimer) {
+                    clearInterval(this.bufferTimer);
+                    this.bufferTimer = null;
+                }
+                this.showBufferUI(false);
+                console.log('🛑 Buffer system stopped');
+            },
+            
+            setBufferSeconds(seconds) {
+                this.targetBufferSeconds = Math.max(3, Math.min(30, seconds));
+                console.log(`⚡ Buffer set to ${this.targetBufferSeconds} seconds`);
+                document.getElementById('targetBuffer').textContent = `${this.targetBufferSeconds}s`;
+                
+                // Update active button
+                document.querySelectorAll('.buffer-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (parseInt(btn.dataset.buffer) === this.targetBufferSeconds) {
+                        btn.classList.add('active');
+                    }
+                });
+            },
+            
+            manualBuffer() {
+                if (state.currentChannelIndex >= 0) {
+                    const channel = state.filteredChannels[state.currentChannelIndex];
+                    this.showBufferUI(true, 'Manual buffer...');
+                    this.start(channel);
+                }
+            }
+        };
+
+        // ==================== APP STATE ====================
         const state = {
             channels: [],
             filteredChannels: [],
@@ -1100,27 +1470,9 @@
             overlayTimeout: null,
             categories: {},
             currentPlaylistUrl: 'https://gist.githubusercontent.com/RalphDarbouze/7fc242ebfecbba4f6854becb8b8abc94/raw/43edf84c8bcc35eb2c538e5cafc07a41c3d8b5eb/my_first_iptv.m3u',
-            
-            // Buffering State
-            isBuffering: false,
-            bufferTimer: null,
-            bufferStartTime: null,
-            bufferTargetSeconds: 5,
-            bufferProgress: 0,
-            bufferSize: 0,
-            
-            // Performance State
-            networkSpeed: 0,
-            videoQuality: 'auto',
-            bitrate: 0,
-            bufferStrategy: 'pre-buffer',
-            videoCacheSize: 0,
-            
-            // Auto-hide overlay in fullscreen
-            overlayHideTimeout: null
         };
 
-        // DOM Elements
+        // ==================== DOM ELEMENTS ====================
         const loadingScreen = document.getElementById('loadingScreen');
         const appContainer = document.getElementById('appContainer');
         const videoPlayer = document.getElementById('video-player');
@@ -1132,9 +1484,10 @@
         const playIcon = document.getElementById('playIcon');
         const prevChannelBtn = document.getElementById('prevChannel');
         const nextChannelBtn = document.getElementById('nextChannel');
+        const manualBufferBtn = document.getElementById('manualBufferBtn');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeIcon = document.getElementById('volumeIcon');
-        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        const fullscreenBtn = document.getElementById('fullscreenBtn'); // FIXED: Changed from fullscreenToggle
         const playerOverlay = document.getElementById('playerOverlay');
         const channelSidebar = document.getElementById('channelSidebar');
         const infoPanel = document.getElementById('infoPanel');
@@ -1147,20 +1500,8 @@
         const currentTimeDisplay = document.getElementById('currentTimeDisplay');
         const durationDisplay = document.getElementById('durationDisplay');
         const progressFill = document.getElementById('progressFill');
-        const bufferingOverlay = document.getElementById('bufferingOverlay');
-        const bufferingText = document.getElementById('bufferingText');
-        const bufferingProgressFill = document.getElementById('bufferingProgressFill');
-        const bufferingTimer = document.getElementById('bufferingTimer');
-        const networkSpeed = document.getElementById('networkSpeed');
-        const performanceSpeed = document.getElementById('performanceSpeed');
-        const bufferSize = document.getElementById('bufferSize');
-        const bufferTime = document.getElementById('bufferTime');
-        const bitrate = document.getElementById('bitrate');
-        const bufferStrategy = document.getElementById('bufferStrategy');
-        const videoCache = document.getElementById('videoCache');
-        const currentQuality = document.getElementById('currentQuality');
 
-        // Initialize the app
+        // ==================== APP INITIALIZATION ====================
         function initApp() {
             updateClock();
             setInterval(updateClock, 60000);
@@ -1169,66 +1510,23 @@
             loadPlaylist();
             setupKeyboardNavigation();
             setInitialVolume();
-            testNetworkSpeed();
+            
+            // Initialize simple buffer system
+            SimpleBuffer.init();
             
             hideInfoPanelWithDelay();
+            
+            // Setup video event listeners
+            setupVideoListeners();
         }
 
-        // Test network speed
-        async function testNetworkSpeed() {
-            performanceSpeed.textContent = 'Testing...';
-            networkSpeed.textContent = 'Testing...';
-            
-            const testImage = new Image();
-            const startTime = Date.now();
-            const testUrl = 'https://via.placeholder.com/1x1.png?text=test&t=' + Date.now();
-            
-            testImage.onload = function() {
-                const endTime = Date.now();
-                const duration = (endTime - startTime) / 1000;
-                const imageSize = 0.0001;
-                const speedMbps = (imageSize * 8) / duration;
-                
-                state.networkSpeed = speedMbps;
-                
-                const displaySpeed = speedMbps > 100 ? '100+' : speedMbps.toFixed(1);
-                performanceSpeed.textContent = `${displaySpeed} Mbps`;
-                networkSpeed.textContent = `${displaySpeed} Mbps`;
-                
-                if (speedMbps < 10) {
-                    state.bufferTargetSeconds = 10;
-                    bufferStrategy.textContent = 'Extended Buffering (Slow Network)';
-                } else if (speedMbps < 30) {
-                    state.bufferTargetSeconds = 7;
-                    bufferStrategy.textContent = 'Moderate Buffering';
-                } else {
-                    state.bufferTargetSeconds = 5;
-                    bufferStrategy.textContent = 'Fast Buffering';
-                }
-                
-                bufferTime.textContent = `${state.bufferTargetSeconds}s`;
-            };
-            
-            testImage.onerror = function() {
-                state.networkSpeed = 80;
-                performanceSpeed.textContent = '80 Mbps (Estimated)';
-                networkSpeed.textContent = '80 Mbps';
-                state.bufferTargetSeconds = 5;
-                bufferStrategy.textContent = 'Standard Buffering';
-                bufferTime.textContent = '5s';
-            };
-            
-            testImage.src = testUrl;
-        }
-
-        // Update clock
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             currentTimeEl.textContent = timeString;
         }
 
-        // Load and parse the M3U playlist
+        // ==================== PLAYLIST LOADING ====================
         async function loadPlaylist() {
             try {
                 const response = await fetch(state.currentPlaylistUrl);
@@ -1246,7 +1544,6 @@
             }
         }
 
-        // Parse M3U playlist format
         function parsePlaylist(playlistText) {
             const lines = playlistText.split('\n');
             const channels = [];
@@ -1299,7 +1596,6 @@
             }
         }
 
-        // Fallback demo channels
         function loadDemoChannels() {
             const demoChannels = [
                 { name: "BBC World News", group: "News", logo: null, url: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4", number: 1 },
@@ -1324,7 +1620,7 @@
             setTimeout(() => selectChannel(0), 100);
         }
 
-        // Render channel list
+        // ==================== CHANNEL MANAGEMENT ====================
         function renderChannelList() {
             channelList.innerHTML = '';
             
@@ -1367,7 +1663,6 @@
             }
         }
 
-        // Create a channel element
         function createChannelElement(channel, index, categoryClass) {
             const channelElement = document.createElement('div');
             channelElement.className = `channel-item ${index === state.currentChannelIndex ? 'active' : ''}`;
@@ -1405,7 +1700,6 @@
             return channelElement;
         }
 
-        // Get channel initials
         function getChannelInitials(name) {
             return name
                 .split(' ')
@@ -1414,13 +1708,29 @@
                 .join('');
         }
 
-        // Select and play a channel with buffering
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            const hue = hash % 360;
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        // ==================== CHANNEL SELECTION ====================
         function selectChannel(index) {
             if (index < 0 || index >= state.filteredChannels.length) return;
             
             const channel = state.filteredChannels[index];
             state.currentChannelIndex = index;
             
+            // Stop any existing playback
+            videoPlayer.pause();
+            state.isPlaying = false;
+            updatePlayPauseButton();
+            
+            // Update channel selection UI
             document.querySelectorAll('.channel-item').forEach(item => {
                 item.classList.remove('active');
             });
@@ -1432,6 +1742,7 @@
                 selectedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
+            // Update UI
             overlayChannelName.textContent = channel.name;
             overlayChannelGroup.textContent = channel.group;
             nowPlayingName.textContent = channel.name;
@@ -1445,158 +1756,10 @@
             showOverlay();
             resetOverlayTimer();
             
-            startBuffering(channel);
+            // Start buffering
+            SimpleBuffer.start(channel);
         }
 
-        // Start buffering process
-        function startBuffering(channel) {
-            if (!channel.url) return;
-            
-            videoPlayer.pause();
-            state.isPlaying = false;
-            updatePlayPauseButton();
-            
-            state.isBuffering = true;
-            bufferingOverlay.classList.add('active');
-            streamStatus.textContent = 'Buffering...';
-            streamStatus.style.color = '#FF9800';
-            
-            state.bufferProgress = 0;
-            state.bufferSize = 0;
-            state.bufferStartTime = Date.now();
-            
-            updateBufferingDisplay();
-            
-            clearInterval(state.bufferTimer);
-            state.bufferTimer = setInterval(updateBufferingDisplay, 100);
-            
-            videoPlayer.src = channel.url;
-            videoPlayer.load();
-            videoPlayer.preload = 'auto';
-            
-            applyVideoQuality();
-            videoPlayer.load();
-            
-            videoPlayer.addEventListener('progress', handleBufferProgress);
-            videoPlayer.addEventListener('canplay', handleCanPlay);
-            videoPlayer.addEventListener('error', handleVideoError);
-        }
-
-        // Update buffering display
-        function updateBufferingDisplay() {
-            if (!state.isBuffering) return;
-            
-            const elapsed = (Date.now() - state.bufferStartTime) / 1000;
-            state.bufferProgress = Math.min(elapsed / state.bufferTargetSeconds, 1);
-            
-            bufferingProgressFill.style.width = `${state.bufferProgress * 100}%`;
-            bufferingTimer.textContent = `Pre-buffering: ${elapsed.toFixed(1)}/${state.bufferTargetSeconds}s`;
-            bufferTime.textContent = `${elapsed.toFixed(1)}s`;
-            
-            if (videoPlayer.buffered.length > 0) {
-                const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
-                state.bufferSize = bufferEnd - videoPlayer.currentTime;
-                bufferSize.textContent = `${state.bufferSize.toFixed(1)}s`;
-            }
-            
-            if (elapsed >= state.bufferTargetSeconds && videoPlayer.readyState >= 3) {
-                completeBuffering();
-            }
-        }
-
-        // Handle buffer progress
-        function handleBufferProgress() {
-            if (videoPlayer.buffered.length > 0) {
-                const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
-                const bufferedSeconds = bufferEnd - videoPlayer.currentTime;
-                
-                bufferSize.textContent = `${bufferedSeconds.toFixed(1)}s`;
-                state.bufferSize = bufferedSeconds;
-                
-                if (videoPlayer.videoWidth > 0) {
-                    const resolution = videoPlayer.videoWidth * videoPlayer.videoHeight;
-                    state.bitrate = resolution > 921600 ? 4000 : resolution > 307200 ? 2000 : 1000;
-                    bitrate.textContent = `${state.bitrate} kbps`;
-                }
-            }
-        }
-
-        // Handle can play event
-        function handleCanPlay() {
-            if (state.bufferProgress >= 1 || !state.isBuffering) {
-                completeBuffering();
-            }
-        }
-
-        // Handle video error
-        function handleVideoError() {
-            console.error('Video loading error:', videoPlayer.error);
-            bufferingText.textContent = 'Stream Error - Trying Again';
-            streamStatus.textContent = 'Error';
-            streamStatus.style.color = '#F44336';
-            
-            setTimeout(() => {
-                if (state.isBuffering) {
-                    const channel = state.filteredChannels[state.currentChannelIndex];
-                    startBuffering(channel);
-                }
-            }, 3000);
-        }
-
-        // Complete buffering and start playback
-        function completeBuffering() {
-            if (!state.isBuffering) return;
-            
-            clearInterval(state.bufferTimer);
-            state.isBuffering = false;
-            
-            bufferingOverlay.classList.remove('active');
-            
-            videoPlayer.play().then(() => {
-                state.isPlaying = true;
-                updatePlayPauseButton();
-                streamStatus.textContent = 'Live';
-                streamStatus.style.color = '#4CAF50';
-                
-                updateVideoCacheSize();
-            }).catch(error => {
-                console.error('Playback failed:', error);
-                state.isPlaying = false;
-                updatePlayPauseButton();
-                streamStatus.textContent = 'Paused';
-                streamStatus.style.color = '#FF9800';
-            });
-            
-            videoPlayer.removeEventListener('progress', handleBufferProgress);
-            videoPlayer.removeEventListener('canplay', handleCanPlay);
-            videoPlayer.removeEventListener('error', handleVideoError);
-        }
-
-        // Update video cache size estimate
-        function updateVideoCacheSize() {
-            if (videoPlayer.buffered.length > 0) {
-                const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
-                const bufferDuration = bufferEnd - videoPlayer.currentTime;
-                
-                const cacheSizeMB = (state.bitrate * bufferDuration) / 8000;
-                state.videoCacheSize = cacheSizeMB;
-                videoCache.textContent = `${cacheSizeMB.toFixed(1)} MB`;
-            }
-        }
-
-        // Apply video quality settings
-        function applyVideoQuality() {
-            currentQuality.textContent = state.videoQuality.toUpperCase();
-            
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.quality === state.videoQuality) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        // Navigate to next/previous channel
         function navigateChannels(direction) {
             let newIndex = state.currentChannelIndex + direction;
             
@@ -1609,30 +1772,32 @@
             selectChannel(newIndex);
         }
 
-        // Play/Pause toggle
+        // ==================== PLAYER CONTROLS ====================
         function togglePlayPause() {
-            if (videoPlayer.src) {
-                if (videoPlayer.paused) {
-                    videoPlayer.play().then(() => {
-                        state.isPlaying = true;
-                        updatePlayPauseButton();
-                        streamStatus.textContent = 'Live';
-                        streamStatus.style.color = '#4CAF50';
-                    }).catch(error => {
-                        console.error('Play failed:', error);
-                    });
-                } else {
-                    videoPlayer.pause();
-                    state.isPlaying = false;
+            if (!videoPlayer.src) return;
+            
+            if (videoPlayer.paused) {
+                videoPlayer.play().then(() => {
+                    state.isPlaying = true;
                     updatePlayPauseButton();
-                    streamStatus.textContent = 'Paused';
-                    streamStatus.style.color = '#FF9800';
-                }
+                    streamStatus.textContent = 'Live';
+                    streamStatus.style.color = '#4CAF50';
+                }).catch(error => {
+                    console.error('Play failed:', error);
+                    // Try to buffer and play
+                    const channel = state.filteredChannels[state.currentChannelIndex];
+                    SimpleBuffer.start(channel);
+                });
+            } else {
+                videoPlayer.pause();
+                state.isPlaying = false;
+                updatePlayPauseButton();
+                streamStatus.textContent = 'Paused';
+                streamStatus.style.color = '#FF9800';
             }
             resetOverlayTimer();
         }
 
-        // Update play/pause button
         function updatePlayPauseButton() {
             if (state.isPlaying) {
                 playIcon.className = 'fas fa-pause';
@@ -1641,19 +1806,12 @@
             }
         }
 
-        // Toggle mute
-        function toggleMute() {
-            state.isMuted = !state.isMuted;
-            videoPlayer.muted = state.isMuted;
-            
-            if (state.isMuted) {
-                volumeIcon.className = 'fas fa-volume-mute';
-            } else {
-                updateVolumeIcon();
-            }
+        function setInitialVolume() {
+            videoPlayer.volume = state.volume;
+            volumeSlider.value = state.volume;
+            updateVolumeIcon();
         }
 
-        // Update volume icon
         function updateVolumeIcon() {
             if (state.volume === 0) {
                 volumeIcon.className = 'fas fa-volume-off';
@@ -1664,26 +1822,7 @@
             }
         }
 
-        // Adjust volume
-        function adjustVolume(direction) {
-            state.isMuted = false;
-            videoPlayer.muted = false;
-            
-            state.volume = Math.max(0, Math.min(1, state.volume + (direction * 0.1)));
-            videoPlayer.volume = state.volume;
-            volumeSlider.value = state.volume;
-            
-            updateVolumeIcon();
-        }
-
-        // Set initial volume
-        function setInitialVolume() {
-            videoPlayer.volume = state.volume;
-            volumeSlider.value = state.volume;
-            updateVolumeIcon();
-        }
-
-        // Toggle fullscreen mode - UPDATED for borderless
+        // ==================== FULLSCREEN - FIXED ====================
         function toggleFullscreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
                 // Enter fullscreen
@@ -1699,16 +1838,6 @@
                     elem.msRequestFullscreen();
                 }
                 
-                state.isFullscreen = true;
-                document.body.classList.add('fullscreen-mode');
-                
-                // Update button icon
-                fullscreenToggle.querySelector('.fullscreen-in').style.display = 'none';
-                fullscreenToggle.querySelector('.fullscreen-out').style.display = 'block';
-                
-                // Adjust video player for borderless fullscreen
-                videoPlayer.style.objectFit = 'cover';
-                
             } else {
                 // Exit fullscreen
                 if (document.exitFullscreen) {
@@ -1720,69 +1849,66 @@
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
                 }
-                
-                state.isFullscreen = false;
-                document.body.classList.remove('fullscreen-mode');
-                
-                // Update button icon
-                fullscreenToggle.querySelector('.fullscreen-in').style.display = 'block';
-                fullscreenToggle.querySelector('.fullscreen-out').style.display = 'none';
-                
-                // Reset video player
-                videoPlayer.style.objectFit = 'contain';
             }
             
             resetOverlayTimer();
         }
 
-        // Handle fullscreen change events
         function handleFullscreenChange() {
             const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
             
-            if (isFullscreen !== state.isFullscreen) {
-                state.isFullscreen = isFullscreen;
-                document.body.classList.toggle('fullscreen-mode', isFullscreen);
-                
-                if (isFullscreen) {
-                    fullscreenToggle.querySelector('.fullscreen-in').style.display = 'none';
-                    fullscreenToggle.querySelector('.fullscreen-out').style.display = 'block';
-                    videoPlayer.style.objectFit = 'cover';
-                } else {
-                    fullscreenToggle.querySelector('.fullscreen-in').style.display = 'block';
-                    fullscreenToggle.querySelector('.fullscreen-out').style.display = 'none';
-                    videoPlayer.style.objectFit = 'contain';
-                }
+            state.isFullscreen = isFullscreen;
+            document.body.classList.toggle('fullscreen-mode', isFullscreen);
+            
+            // Update fullscreen button icon
+            if (isFullscreen) {
+                fullscreenBtn.querySelector('.fullscreen-in').style.display = 'none';
+                fullscreenBtn.querySelector('.fullscreen-out').style.display = 'block';
+                videoPlayer.style.objectFit = 'contain';
+            } else {
+                fullscreenBtn.querySelector('.fullscreen-in').style.display = 'block';
+                fullscreenBtn.querySelector('.fullscreen-out').style.display = 'none';
+                videoPlayer.style.objectFit = 'contain';
+            }
+            
+            // Show overlay when entering fullscreen
+            if (isFullscreen) {
+                showOverlay();
+                resetOverlayTimer();
             }
         }
 
-        // Show overlay
+        // ==================== UI CONTROLS ====================
         function showOverlay() {
+            playerOverlay.classList.add('active');
+            playerOverlay.classList.remove('hide-overlay');
+            state.showOverlay = true;
+            
+            // Always show buffer stats in fullscreen
             if (state.isFullscreen) {
-                playerOverlay.classList.add('active');
-                playerOverlay.classList.remove('hide-overlay');
-                state.showOverlay = true;
+                document.getElementById('bufferStats').style.display = 'block';
             }
         }
 
-        // Hide overlay
         function hideOverlay() {
             playerOverlay.classList.add('hide-overlay');
             setTimeout(() => {
                 playerOverlay.classList.remove('active');
             }, 500);
             state.showOverlay = false;
-        }
-
-        // Reset overlay timer
-        function resetOverlayTimer() {
-            clearTimeout(state.overlayHideTimeout);
+            
+            // Hide buffer stats when overlay hides
             if (state.isFullscreen) {
-                showOverlay();
-                state.overlayHideTimeout = setTimeout(hideOverlay, 3000);
+                document.getElementById('bufferStats').style.display = 'none';
             }
         }
 
-        // Hide info panel after delay
+        function resetOverlayTimer() {
+            clearTimeout(state.overlayTimeout);
+            showOverlay();
+            state.overlayTimeout = setTimeout(hideOverlay, 3000);
+        }
+
         function hideInfoPanelWithDelay() {
             setTimeout(() => {
                 infoPanel.classList.add('hidden');
@@ -1790,7 +1916,6 @@
             }, 10000);
         }
 
-        // Toggle info panel
         function toggleInfoPanel() {
             if (state.showInfoPanel) {
                 infoPanel.classList.add('hidden');
@@ -1801,7 +1926,6 @@
             }
         }
 
-        // Filter channels
         function filterChannels() {
             const searchTerm = channelSearch.value.toLowerCase();
             
@@ -1823,8 +1947,14 @@
             }
         }
 
-        // Setup video time tracking
-        function setupVideoTimeTracking() {
+        function showApp() {
+            loadingScreen.style.display = 'none';
+            appContainer.style.display = 'flex';
+        }
+
+        // ==================== VIDEO LISTENERS ====================
+        function setupVideoListeners() {
+            // Track video progress
             videoPlayer.addEventListener('timeupdate', updateTimeDisplay);
             videoPlayer.addEventListener('loadedmetadata', () => {
                 durationDisplay.textContent = formatTime(videoPlayer.duration);
@@ -1834,12 +1964,58 @@
                 if (videoPlayer.duration) {
                     const progress = (videoPlayer.currentTime / videoPlayer.duration) * 100;
                     progressFill.style.width = `${progress}%`;
-                    updateVideoCacheSize();
                 }
+            });
+            
+            // Update buffer stats when video progresses
+            videoPlayer.addEventListener('progress', () => {
+                if (videoPlayer.buffered.length > 0) {
+                    const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+                    const bufferSeconds = bufferEnd - videoPlayer.currentTime;
+                    
+                    // Update buffer display
+                    document.getElementById('currentBufferTime').textContent = `${bufferSeconds.toFixed(1)}s`;
+                    document.getElementById('bufferTime').textContent = `${bufferSeconds.toFixed(1)}s`;
+                    document.getElementById('currentBuffer').textContent = `${bufferSeconds.toFixed(1)}s`;
+                    
+                    const bufferPercent = Math.round((bufferSeconds / SimpleBuffer.targetBufferSeconds) * 100);
+                    document.getElementById('bufferProgress').textContent = `${bufferPercent}%`;
+                }
+            });
+            
+            // Handle video events
+            videoPlayer.addEventListener('play', () => {
+                state.isPlaying = true;
+                updatePlayPauseButton();
+                streamStatus.textContent = 'Live';
+                streamStatus.style.color = '#4CAF50';
+                SimpleBuffer.updateBufferStatus('Playing');
+            });
+            
+            videoPlayer.addEventListener('pause', () => {
+                state.isPlaying = false;
+                updatePlayPauseButton();
+                streamStatus.textContent = 'Paused';
+                streamStatus.style.color = '#FF9800';
+            });
+            
+            videoPlayer.addEventListener('waiting', () => {
+                if (!SimpleBuffer.isBuffering) {
+                    SimpleBuffer.showBufferUI(true, 'Buffering...');
+                }
+            });
+            
+            videoPlayer.addEventListener('playing', () => {
+                SimpleBuffer.showBufferUI(false);
+            });
+            
+            videoPlayer.addEventListener('volumechange', () => {
+                state.volume = videoPlayer.volume;
+                volumeSlider.value = state.volume;
+                updateVolumeIcon();
             });
         }
 
-        // Update time display
         function updateTimeDisplay() {
             currentTimeDisplay.textContent = formatTime(videoPlayer.currentTime);
             if (!isNaN(videoPlayer.duration)) {
@@ -1847,7 +2023,6 @@
             }
         }
 
-        // Format time
         function formatTime(seconds) {
             if (isNaN(seconds)) return '0:00';
             const mins = Math.floor(seconds / 60);
@@ -1855,33 +2030,32 @@
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // Generate consistent color from string
-        function stringToColor(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            
-            const hue = hash % 360;
-            return `hsl(${hue}, 70%, 50%)`;
-        }
-
-        // Setup keyboard navigation
+        // ==================== KEYBOARD CONTROLS ====================
         function setupKeyboardNavigation() {
             document.addEventListener('keydown', (e) => {
-                // Handle fullscreen with F key
+                // Fullscreen
                 if (e.key === 'f' || e.key === 'F') {
                     e.preventDefault();
                     toggleFullscreen();
                 }
                 
-                // Handle quality change with Q key
-                if (e.key === 'q' || e.key === 'Q') {
+                // Manual buffer
+                if (e.key === 'b' || e.key === 'B') {
                     e.preventDefault();
-                    cycleVideoQuality();
+                    SimpleBuffer.manualBuffer();
                 }
                 
-                // Handle overlay toggle with ESC
+                // Buffer presets (1-4)
+                if (e.key >= '1' && e.key <= '4') {
+                    e.preventDefault();
+                    const bufferTimes = [5, 10, 15, 20];
+                    const index = parseInt(e.key) - 1;
+                    if (index < bufferTimes.length) {
+                        SimpleBuffer.setBufferSeconds(bufferTimes[index]);
+                    }
+                }
+                
+                // Escape
                 if (e.key === 'Escape') {
                     e.preventDefault();
                     if (state.isFullscreen) {
@@ -1903,10 +2077,16 @@
                 // Volume control
                 else if (e.key === 'ArrowLeft') {
                     e.preventDefault();
-                    adjustVolume(-0.1);
+                    state.volume = Math.max(0, state.volume - 0.1);
+                    videoPlayer.volume = state.volume;
+                    volumeSlider.value = state.volume;
+                    updateVolumeIcon();
                 } else if (e.key === 'ArrowRight') {
                     e.preventDefault();
-                    adjustVolume(0.1);
+                    state.volume = Math.min(1, state.volume + 0.1);
+                    videoPlayer.volume = state.volume;
+                    volumeSlider.value = state.volume;
+                    updateVolumeIcon();
                 }
                 
                 // Play/Pause
@@ -1943,27 +2123,7 @@
             });
         }
 
-        // Cycle video quality
-        function cycleVideoQuality() {
-            const qualities = ['auto', 'high', 'medium', 'low'];
-            const currentIndex = qualities.indexOf(state.videoQuality);
-            const nextIndex = (currentIndex + 1) % qualities.length;
-            state.videoQuality = qualities[nextIndex];
-            applyVideoQuality();
-            
-            if (videoPlayer.src && !state.isBuffering) {
-                const channel = state.filteredChannels[state.currentChannelIndex];
-                startBuffering(channel);
-            }
-        }
-
-        // Show app
-        function showApp() {
-            loadingScreen.style.display = 'none';
-            appContainer.style.display = 'flex';
-        }
-
-        // Setup event listeners
+        // ==================== EVENT LISTENERS ====================
         function setupEventListeners() {
             playPauseBtn.addEventListener('click', togglePlayPause);
             prevChannelBtn.addEventListener('click', () => {
@@ -1974,17 +2134,19 @@
                 navigateChannels(1);
                 resetOverlayTimer();
             });
+            manualBufferBtn.addEventListener('click', () => {
+                SimpleBuffer.manualBuffer();
+                resetOverlayTimer();
+            });
             
-            // Fullscreen toggle button
-            fullscreenToggle.addEventListener('click', toggleFullscreen);
-            
-            // Fullscreen change listeners
+            // Fullscreen - FIXED: Using fullscreenBtn
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
             
-            // Volume slider
+            // Volume
             volumeSlider.addEventListener('input', (e) => {
                 state.volume = parseFloat(e.target.value);
                 videoPlayer.volume = state.volume;
@@ -1994,60 +2156,25 @@
             // Channel search
             channelSearch.addEventListener('input', filterChannels);
             
-            // Quality buttons
-            document.querySelectorAll('.quality-btn').forEach(btn => {
+            // Buffer buttons
+            document.querySelectorAll('.buffer-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    state.videoQuality = btn.dataset.quality;
-                    applyVideoQuality();
-                    
-                    if (videoPlayer.src && !state.isBuffering) {
-                        const channel = state.filteredChannels[state.currentChannelIndex];
-                        startBuffering(channel);
-                    }
+                    const seconds = parseInt(btn.dataset.buffer);
+                    SimpleBuffer.setBufferSeconds(seconds);
                 });
-            });
-            
-            // Video events
-            videoPlayer.addEventListener('play', () => {
-                state.isPlaying = true;
-                updatePlayPauseButton();
-                streamStatus.textContent = 'Live';
-                streamStatus.style.color = '#4CAF50';
-            });
-            
-            videoPlayer.addEventListener('pause', () => {
-                state.isPlaying = false;
-                updatePlayPauseButton();
-                streamStatus.textContent = 'Paused';
-                streamStatus.style.color = '#FF9800';
-            });
-            
-            videoPlayer.addEventListener('volumechange', () => {
-                state.volume = videoPlayer.volume;
-                volumeSlider.value = state.volume;
-                updateVolumeIcon();
             });
             
             // Show overlay on interaction
             document.addEventListener('mousemove', () => {
-                if (state.isFullscreen) {
-                    showOverlay();
-                    resetOverlayTimer();
-                }
+                resetOverlayTimer();
             });
             
             document.addEventListener('touchstart', () => {
-                if (state.isFullscreen) {
-                    showOverlay();
-                    resetOverlayTimer();
-                }
+                resetOverlayTimer();
             });
-            
-            // Setup time tracking
-            setupVideoTimeTracking();
         }
 
-        // Initialize the application
+        // ==================== INITIALIZE APP ====================
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
