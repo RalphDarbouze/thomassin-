@@ -342,6 +342,47 @@
             display: none;
         }
         
+        /* Live Viewer Counter */
+        .viewer-counter {
+            position: absolute;
+            bottom: 20px;
+            right: 90px;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 20px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            opacity: 0.8;
+            display: none; /* Hidden by default, shown in JS */
+        }
+        
+        .viewer-counter:hover {
+            background: rgba(0, 0, 0, 0.9);
+            opacity: 1;
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+        
+        .viewer-counter i {
+            color: #4CAF50;
+            font-size: 14px;
+        }
+        
+        .viewer-counter span {
+            color: white;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        
         /* Advanced Buffering Overlay */
         .buffering-overlay {
             position: absolute;
@@ -845,6 +886,18 @@
             display: block !important;
         }
         
+        body.fullscreen-mode .viewer-counter {
+            bottom: 30px !important;
+            right: 110px !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            padding: 10px 18px !important;
+            font-size: 14px !important;
+        }
+        
+        body.fullscreen-mode .viewer-counter i {
+            font-size: 16px !important;
+        }
+        
         /* Fullscreen button icons */
         .fullscreen-btn .fullscreen-out {
             display: none;
@@ -880,6 +933,62 @@
             body.fullscreen-mode #video-player {
                 object-fit: contain !important;
             }
+        }
+        
+        /* Live Event Notification */
+        .live-event-notification {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            border-left: 4px solid #FF9800;
+            border-radius: 6px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 60;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-out;
+            max-width: 300px;
+        }
+        
+        .live-event-notification i {
+            color: #FF9800;
+            font-size: 16px;
+        }
+        
+        .live-event-notification.fade-out {
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Counting animation */
+        .viewer-counter .counting {
+            animation: pulse 0.5s ease;
+            color: #FF9800;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
         }
         
         /* Responsive */
@@ -943,6 +1052,17 @@
                 height: 45px;
                 bottom: 15px;
                 right: 15px;
+            }
+            
+            .viewer-counter {
+                bottom: 15px;
+                right: 70px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .viewer-counter i {
+                font-size: 12px;
             }
         }
         
@@ -1026,6 +1146,12 @@
                     <i class="fas fa-expand fullscreen-in"></i>
                     <i class="fas fa-compress fullscreen-out"></i>
                 </button>
+                
+                <!-- LIVE VIEWER COUNTER -->
+                <div class="viewer-counter" id="viewerCounter" title="Live Viewers">
+                    <i class="fas fa-users"></i>
+                    <span id="viewerCount">0</span>
+                </div>
                 
                 <!-- Buffer Stats Display -->
                 <div class="buffer-stats-display" id="bufferStats">
@@ -1186,6 +1312,306 @@
     </div>
 
     <script>
+        // ==================== LIVE VIEWER COUNTER SYSTEM ====================
+        const ViewerCounter = {
+            currentViewers: 0,
+            isActive: false,
+            updateInterval: null,
+            wsConnection: null,
+            
+            // Demo mode - set to false if you have a real WebSocket server
+            useDemoMode: true,
+            
+            // WebSocket URL for real-time updates (configure this if you have a server)
+            websocketUrl: 'wss://your-websocket-server.com/live-viewers',
+            
+            init() {
+                console.log('👥 Viewer Counter System Initialized');
+                
+                if (this.useDemoMode) {
+                    this.startDemoMode();
+                } else {
+                    this.connectWebSocket();
+                }
+                
+                // Initialize with some viewers
+                this.updateViewerCount(42); // Default starting value
+                
+                // Show the counter
+                document.getElementById('viewerCounter').style.display = 'flex';
+            },
+            
+            // Demo mode for testing
+            startDemoMode() {
+                console.log('🎭 Starting demo mode for viewer counter');
+                
+                // Update viewer count every 5-15 seconds with random changes
+                this.updateInterval = setInterval(() => {
+                    const change = Math.random();
+                    let newCount = this.currentViewers;
+                    
+                    if (change < 0.4) {
+                        // Decrease by 1-3 viewers
+                        newCount -= Math.floor(Math.random() * 3) + 1;
+                    } else if (change < 0.8) {
+                        // Increase by 1-5 viewers
+                        newCount += Math.floor(Math.random() * 5) + 1;
+                    }
+                    
+                    // Ensure count doesn't go below 1 or above 1000
+                    newCount = Math.max(1, Math.min(1000, newCount));
+                    
+                    this.updateViewerCount(newCount);
+                    
+                    // Occasionally show a "live event" spike
+                    if (Math.random() < 0.1) {
+                        setTimeout(() => {
+                            this.showViewerSpike();
+                        }, 2000);
+                    }
+                    
+                }, 8000 + Math.random() * 14000); // Random interval between 8-22 seconds
+            },
+            
+            // Real WebSocket connection
+            connectWebSocket() {
+                try {
+                    this.wsConnection = new WebSocket(this.websocketUrl);
+                    
+                    this.wsConnection.onopen = () => {
+                        console.log('✅ Connected to live viewer server');
+                        this.isActive = true;
+                        
+                        // Subscribe to channel updates
+                        if (state.currentChannelIndex >= 0) {
+                            const channel = state.filteredChannels[state.currentChannelIndex];
+                            this.subscribeToChannel(channel);
+                        }
+                    };
+                    
+                    this.wsConnection.onmessage = (event) => {
+                        try {
+                            const data = JSON.parse(event.data);
+                            
+                            if (data.type === 'viewer_count') {
+                                this.updateViewerCount(data.count);
+                            } else if (data.type === 'channel_viewers') {
+                                if (data.channelId === this.getCurrentChannelId()) {
+                                    this.updateViewerCount(data.count);
+                                }
+                            } else if (data.type === 'live_event') {
+                                this.showLiveEventNotification(data.message);
+                            }
+                        } catch (error) {
+                            console.error('Error parsing viewer data:', error);
+                        }
+                    };
+                    
+                    this.wsConnection.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        // Fall back to demo mode
+                        if (this.useDemoMode) {
+                            this.startDemoMode();
+                        }
+                    };
+                    
+                    this.wsConnection.onclose = () => {
+                        console.log('📡 Disconnected from viewer server');
+                        this.isActive = false;
+                        // Try to reconnect after 5 seconds
+                        setTimeout(() => this.connectWebSocket(), 5000);
+                    };
+                    
+                } catch (error) {
+                    console.error('Failed to connect to viewer server:', error);
+                    if (this.useDemoMode) {
+                        this.startDemoMode();
+                    }
+                }
+            },
+            
+            // Get current channel ID for WebSocket subscription
+            getCurrentChannelId() {
+                if (state.currentChannelIndex >= 0) {
+                    const channel = state.filteredChannels[state.currentChannelIndex];
+                    return channel.name.toLowerCase().replace(/\s+/g, '_');
+                }
+                return null;
+            },
+            
+            // Subscribe to channel updates
+            subscribeToChannel(channel) {
+                if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+                    const channelId = channel.name.toLowerCase().replace(/\s+/g, '_');
+                    const message = {
+                        type: 'subscribe',
+                        channel: channelId
+                    };
+                    this.wsConnection.send(JSON.stringify(message));
+                }
+            },
+            
+            // Update viewer count with animation
+            updateViewerCount(newCount) {
+                const oldCount = this.currentViewers;
+                this.currentViewers = newCount;
+                
+                const viewerCountEl = document.getElementById('viewerCount');
+                
+                // Add animation class
+                viewerCountEl.classList.add('counting');
+                
+                // Smooth count animation
+                if (Math.abs(newCount - oldCount) > 10) {
+                    this.animateCountChange(oldCount, newCount, viewerCountEl);
+                } else {
+                    viewerCountEl.textContent = this.formatViewerCount(newCount);
+                }
+                
+                // Remove animation class after animation
+                setTimeout(() => {
+                    viewerCountEl.classList.remove('counting');
+                }, 1000);
+                
+                // Log for debugging
+                console.log(`👥 Viewers updated: ${oldCount} → ${newCount}`);
+                
+                // Update channel item if it's the current channel
+                this.updateChannelViewerDisplay();
+            },
+            
+            // Animate count changes
+            animateCountChange(start, end, element) {
+                const duration = 800;
+                const startTime = Date.now();
+                const step = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.round(start + (end - start) * easeOut);
+                    
+                    element.textContent = this.formatViewerCount(current);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        element.textContent = this.formatViewerCount(end);
+                    }
+                };
+                requestAnimationFrame(step);
+            },
+            
+            // Format viewer count (e.g., 1.2k for 1200)
+            formatViewerCount(count) {
+                if (count >= 1000) {
+                    return (count / 1000).toFixed(1) + 'k';
+                }
+                return count.toString();
+            },
+            
+            // Show a viewer spike (simulating a popular event)
+            showViewerSpike() {
+                const spikeAmount = Math.floor(Math.random() * 100) + 30;
+                const newCount = this.currentViewers + spikeAmount;
+                
+                // Don't exceed reasonable limits
+                if (newCount > 1000) return;
+                
+                this.updateViewerCount(newCount);
+                
+                // Show notification
+                this.showLiveEventNotification(`${spikeAmount} new viewers joined!`);
+            },
+            
+            // Update viewer display on channel items
+            updateChannelViewerDisplay() {
+                const currentChannel = state.filteredChannels[state.currentChannelIndex];
+                if (!currentChannel) return;
+                
+                // Update overlay if it's the current channel
+                if (overlayChannelName.textContent === currentChannel.name) {
+                    // You could add viewer count to channel overlay if desired
+                    // overlayChannelGroup.textContent = `${currentChannel.group} • ${this.formatViewerCount(this.currentViewers)} viewers`;
+                }
+            },
+            
+            // Show live event notification
+            showLiveEventNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = 'live-event-notification';
+                notification.innerHTML = `
+                    <i class="fas fa-bolt"></i>
+                    <span>${message}</span>
+                `;
+                
+                // Add to player area
+                const playerArea = document.querySelector('.player-area');
+                playerArea.appendChild(notification);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 500);
+                }, 5000);
+            },
+            
+            // Handle channel change
+            onChannelChange(newChannel) {
+                if (!this.useDemoMode && this.wsConnection) {
+                    this.subscribeToChannel(newChannel);
+                }
+                
+                // Reset to new channel's viewer count
+                // In real implementation, this would come from server
+                // For demo, generate a realistic number based on channel
+                const baseViewers = this.calculateBaseViewers(newChannel);
+                this.updateViewerCount(baseViewers);
+            },
+            
+            // Calculate realistic base viewers for a channel (demo only)
+            calculateBaseViewers(channel) {
+                let base = 50; // Minimum viewers
+                
+                // Sports channels have more viewers
+                if (channel.group.toLowerCase().includes('sport')) {
+                    base += Math.floor(Math.random() * 200) + 100;
+                }
+                // News channels
+                else if (channel.group.toLowerCase().includes('news')) {
+                    base += Math.floor(Math.random() * 150) + 80;
+                }
+                // Entertainment channels
+                else if (channel.group.toLowerCase().includes('entertain')) {
+                    base += Math.floor(Math.random() * 100) + 50;
+                }
+                
+                // Add some randomness
+                base += Math.floor(Math.random() * 50);
+                
+                return base;
+            },
+            
+            // Cleanup
+            destroy() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+                
+                if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+                    this.wsConnection.close();
+                }
+                
+                console.log('👥 Viewer Counter System Destroyed');
+            }
+        };
+
         // ==================== SIMPLIFIED BUFFER SYSTEM ====================
         const SimpleBuffer = {
             targetBufferSeconds: 10,
@@ -1487,7 +1913,7 @@
         const manualBufferBtn = document.getElementById('manualBufferBtn');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeIcon = document.getElementById('volumeIcon');
-        const fullscreenBtn = document.getElementById('fullscreenBtn'); // FIXED: Changed from fullscreenToggle
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
         const playerOverlay = document.getElementById('playerOverlay');
         const channelSidebar = document.getElementById('channelSidebar');
         const infoPanel = document.getElementById('infoPanel');
@@ -1513,6 +1939,9 @@
             
             // Initialize simple buffer system
             SimpleBuffer.init();
+            
+            // Initialize viewer counter
+            ViewerCounter.init();
             
             hideInfoPanelWithDelay();
             
@@ -1724,6 +2153,9 @@
             
             const channel = state.filteredChannels[index];
             state.currentChannelIndex = index;
+            
+            // Notify viewer counter of channel change
+            ViewerCounter.onChannelChange(channel);
             
             // Stop any existing playback
             videoPlayer.pause();
@@ -2139,7 +2571,7 @@
                 resetOverlayTimer();
             });
             
-            // Fullscreen - FIXED: Using fullscreenBtn
+            // Fullscreen
             fullscreenBtn.addEventListener('click', toggleFullscreen);
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
