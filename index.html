@@ -442,7 +442,7 @@
             font-weight: 600;
             box-shadow: var(--shadow-md);
             transition: all 0.3s ease;
-            display: none;
+            display: flex;
         }
         
         .viewer-counter:hover {
@@ -593,6 +593,7 @@
             z-index: 15;
             border: 1px solid var(--glass-border);
             box-shadow: var(--shadow-lg);
+            display: none; /* Hidden by default */
         }
         
         .buffer-stats-title {
@@ -1842,12 +1843,13 @@
             }
         };
 
-        // ==================== SIMPLIFIED BUFFER SYSTEM ====================
+        // ==================== FIXED BUFFER SYSTEM ====================
         const SimpleBuffer = {
             targetBufferSeconds: 10,
             isBuffering: false,
             bufferTimer: null,
             currentBufferSeconds: 0,
+            bufferTimeout: null,
             
             init() {
                 console.log('🔄 Simple Buffer System Initialized');
@@ -1873,24 +1875,46 @@
                 videoPlayer.src = '';
                 videoPlayer.load();
                 
-                // Small delay before setting new source
-                setTimeout(() => {
-                    // Set video source
-                    videoPlayer.src = channel.url;
-                    
-                    // Set important attributes for IPTV streams
-                    videoPlayer.crossOrigin = "anonymous";
-                    videoPlayer.preload = "none";
-                    
-                    // Load the video
-                    videoPlayer.load();
-                    
-                    // Start buffer monitoring
-                    this.startBufferMonitoring();
-                    
-                }, 100);
+                // Set video source
+                videoPlayer.src = channel.url;
+                videoPlayer.crossOrigin = "anonymous";
+                videoPlayer.preload = "auto";
+                
+                // Load the video
+                videoPlayer.load();
+                
+                // Set timeout to auto-hide buffering overlay after 4 seconds
+                clearTimeout(this.bufferTimeout);
+                this.bufferTimeout = setTimeout(() => {
+                    this.showBufferUI(false);
+                }, 4000);
+                
+                // Start buffer monitoring
+                this.startBufferMonitoring();
+                
+                // Try to play immediately with autoplay
+                this.tryAutoPlay();
                 
                 return true;
+            },
+            
+            tryAutoPlay() {
+                // Try to auto-play after a short delay
+                setTimeout(() => {
+                    videoPlayer.play().then(() => {
+                        console.log('▶️ Auto-play successful');
+                        this.isBuffering = false;
+                        this.showBufferUI(false);
+                        state.isPlaying = true;
+                        updatePlayPauseButton();
+                        this.updateBufferStatus('Playing');
+                        document.getElementById('streamStatus').textContent = 'Live';
+                        document.getElementById('streamStatus').style.color = '#4CAF50';
+                    }).catch(error => {
+                        console.log('⚠️ Auto-play blocked, waiting for user interaction');
+                        // Auto-play was blocked, we'll wait for user to click play
+                    });
+                }, 1000);
             },
             
             startBufferMonitoring() {
@@ -1926,11 +1950,6 @@
                         if (this.currentBufferSeconds >= this.targetBufferSeconds) {
                             this.complete();
                         }
-                        
-                        // If video has dimensions, it means video is decoding
-                        if (videoPlayer.videoWidth > 0 && !videoPlayer.paused) {
-                            this.complete();
-                        }
                     } else {
                         // Fallback to time-based progress
                         const bufferProgress = Math.min(elapsed / this.targetBufferSeconds, 1);
@@ -1941,17 +1960,30 @@
                             `Loading: ${elapsed.toFixed(1)}/${this.targetBufferSeconds}s`;
                         
                         // If it's taking too long, try to play anyway
-                        if (elapsed >= 5 && !hasVideoData) {
+                        if (elapsed >= Math.min(this.targetBufferSeconds, 5)) {
                             this.complete();
                         }
                     }
                 }, 500);
                 
                 // Add video event listeners
-                videoPlayer.addEventListener('loadeddata', this.handleLoadedData.bind(this));
-                videoPlayer.addEventListener('canplay', this.handleCanPlay.bind(this));
-                videoPlayer.addEventListener('error', this.handleVideoError.bind(this));
-                videoPlayer.addEventListener('playing', this.handlePlaying.bind(this));
+                const loadedDataHandler = this.handleLoadedData.bind(this);
+                const canPlayHandler = this.handleCanPlay.bind(this);
+                const videoErrorHandler = this.handleVideoError.bind(this);
+                const playingHandler = this.handlePlaying.bind(this);
+                
+                videoPlayer.addEventListener('loadeddata', loadedDataHandler);
+                videoPlayer.addEventListener('canplay', canPlayHandler);
+                videoPlayer.addEventListener('error', videoErrorHandler);
+                videoPlayer.addEventListener('playing', playingHandler);
+                
+                // Store handlers for cleanup
+                this.eventHandlers = {
+                    loadeddata: loadedDataHandler,
+                    canplay: canPlayHandler,
+                    error: videoErrorHandler,
+                    playing: playingHandler
+                };
             },
             
             handleLoadedData() {
@@ -2018,6 +2050,15 @@
                 
                 this.isBuffering = false;
                 clearInterval(this.bufferTimer);
+                clearTimeout(this.bufferTimeout);
+                
+                // Remove event listeners
+                if (this.eventHandlers) {
+                    videoPlayer.removeEventListener('loadeddata', this.eventHandlers.loadeddata);
+                    videoPlayer.removeEventListener('canplay', this.eventHandlers.canplay);
+                    videoPlayer.removeEventListener('error', this.eventHandlers.error);
+                    videoPlayer.removeEventListener('playing', this.eventHandlers.playing);
+                }
                 
                 // Try to play
                 videoPlayer.play().then(() => {
@@ -2035,12 +2076,6 @@
                     this.showBufferUI(false);
                     this.updateBufferStatus('Ready');
                 });
-                
-                // Remove event listeners
-                videoPlayer.removeEventListener('loadeddata', this.handleLoadedData);
-                videoPlayer.removeEventListener('canplay', this.handleCanPlay);
-                videoPlayer.removeEventListener('error', this.handleVideoError);
-                videoPlayer.removeEventListener('playing', this.handlePlaying);
             },
             
             showBufferUI(show, text = null) {
@@ -2049,7 +2084,9 @@
                 
                 if (show) {
                     bufferingOverlay.classList.add('active');
-                    bufferingText.textContent = text || 'Buffering...';
+                    if (text) {
+                        bufferingText.textContent = text;
+                    }
                     document.getElementById('streamStatus').textContent = 'Buffering';
                     document.getElementById('streamStatus').style.color = '#FF9800';
                 } else {
@@ -2085,12 +2122,16 @@
                     clearInterval(this.bufferTimer);
                     this.bufferTimer = null;
                 }
+                if (this.bufferTimeout) {
+                    clearTimeout(this.bufferTimeout);
+                    this.bufferTimeout = null;
+                }
                 this.showBufferUI(false);
                 console.log('🛑 Buffer system stopped');
             },
             
             setBufferSeconds(seconds) {
-                this.targetBufferSeconds = Math.max(3, Math.min(30, seconds));
+                this.targetBufferSeconds = Math.max(3, Math.min(30, parseInt(seconds)));
                 console.log(`⚡ Buffer set to ${this.targetBufferSeconds} seconds`);
                 document.getElementById('targetBuffer').textContent = `${this.targetBufferSeconds}s`;
                 
@@ -2177,12 +2218,53 @@
             
             // Setup video event listeners
             setupVideoListeners();
+            
+            // Test network speed
+            testNetworkSpeed();
         }
 
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             currentTimeEl.textContent = timeString;
+        }
+
+        // ==================== NETWORK SPEED TEST ====================
+        async function testNetworkSpeed() {
+            try {
+                const startTime = Date.now();
+                const response = await fetch('https://source.unsplash.com/random/100x100');
+                const endTime = Date.now();
+                
+                if (response.ok) {
+                    const contentLength = response.headers.get('content-length');
+                    if (contentLength) {
+                        const fileSizeKB = parseInt(contentLength) / 1024;
+                        const durationSeconds = (endTime - startTime) / 1000;
+                        const speedMbps = (fileSizeKB * 8) / (durationSeconds * 1024);
+                        
+                        document.getElementById('networkSpeed').textContent = `${speedMbps.toFixed(1)} Mbps`;
+                        document.getElementById('liveNetworkSpeed').textContent = `${speedMbps.toFixed(1)} Mbps`;
+                        document.getElementById('performanceSpeed').textContent = `${speedMbps.toFixed(1)} Mbps`;
+                        
+                        // Adjust buffer based on speed
+                        if (speedMbps < 2) {
+                            SimpleBuffer.setBufferSeconds(20);
+                        } else if (speedMbps < 5) {
+                            SimpleBuffer.setBufferSeconds(15);
+                        } else if (speedMbps < 10) {
+                            SimpleBuffer.setBufferSeconds(10);
+                        } else {
+                            SimpleBuffer.setBufferSeconds(5);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Network speed test failed:', error);
+                document.getElementById('networkSpeed').textContent = 'Unknown';
+                document.getElementById('liveNetworkSpeed').textContent = 'Unknown';
+                document.getElementById('performanceSpeed').textContent = 'Unknown';
+            }
         }
 
         // ==================== PLAYLIST LOADING ====================
@@ -2327,6 +2409,7 @@
             channelElement.className = `channel-item ${index === state.currentChannelIndex ? 'active' : ''}`;
             channelElement.tabIndex = 0;
             channelElement.dataset.index = index;
+            channelElement.dataset.number = channel.number;
             
             const logoText = getChannelInitials(channel.name);
             const logoColor = stringToColor(channel.name);
@@ -2337,7 +2420,7 @@
                 </div>
                 <div class="channel-info">
                     <div class="channel-name">${channel.name}</div>
-                    <div class="channel-number">${channel.number}</div>
+                    <div class="channel-number">${channel.number.toString().padStart(3, '0')}</div>
                 </div>
                 <div class="channel-playing">
                     <i class="fas fa-play"></i>
@@ -2387,11 +2470,6 @@
             // Notify REAL viewer counter of channel change
             RealViewerCounter.onChannelChange(channel);
             
-            // Stop any existing playback
-            videoPlayer.pause();
-            state.isPlaying = false;
-            updatePlayPauseButton();
-            
             // Update channel selection UI
             document.querySelectorAll('.channel-item').forEach(item => {
                 item.classList.remove('active');
@@ -2418,7 +2496,7 @@
             showOverlay();
             resetOverlayTimer();
             
-            // Start buffering
+            // Start buffering with auto-play
             SimpleBuffer.start(channel);
         }
 
@@ -2434,6 +2512,38 @@
             selectChannel(newIndex);
         }
 
+        // ==================== NUMBER CHANNEL SEARCH ====================
+        function findChannelByNumber(numberStr) {
+            // Remove leading zeros and convert to number
+            const channelNumber = parseInt(numberStr.replace(/^0+/, ''));
+            
+            if (isNaN(channelNumber)) return -1;
+            
+            // Try exact match first
+            let index = state.filteredChannels.findIndex(channel => channel.number === channelNumber);
+            
+            // If not found, try with leading zeros (up to 5 digits)
+            if (index === -1) {
+                for (let i = 0; i < state.filteredChannels.length; i++) {
+                    const channel = state.filteredChannels[i];
+                    const channelNumStr = channel.number.toString();
+                    const paddedNumber = channelNumber.toString();
+                    
+                    // Match with different padding lengths (up to 5 digits)
+                    if (channelNumStr === paddedNumber || 
+                        channelNumStr === paddedNumber.padStart(2, '0') ||
+                        channelNumStr === paddedNumber.padStart(3, '0') ||
+                        channelNumStr === paddedNumber.padStart(4, '0') ||
+                        channelNumStr === paddedNumber.padStart(5, '0')) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            
+            return index;
+        }
+
         // ==================== PLAYER CONTROLS ====================
         function togglePlayPause() {
             if (!videoPlayer.src) return;
@@ -2444,6 +2554,7 @@
                     updatePlayPauseButton();
                     streamStatus.textContent = 'Live';
                     streamStatus.style.color = '#4CAF50';
+                    SimpleBuffer.updateBufferStatus('Playing');
                 }).catch(error => {
                     console.error('Play failed:', error);
                     // Try to buffer and play
@@ -2456,6 +2567,7 @@
                 updatePlayPauseButton();
                 streamStatus.textContent = 'Paused';
                 streamStatus.style.color = '#FF9800';
+                SimpleBuffer.updateBufferStatus('Paused');
             }
             resetOverlayTimer();
         }
@@ -2546,7 +2658,7 @@
             playerOverlay.classList.remove('hide-overlay');
             state.showOverlay = true;
             
-            // Always show buffer stats in fullscreen
+            // Show buffer stats in fullscreen
             if (state.isFullscreen) {
                 document.getElementById('bufferStats').style.display = 'block';
             }
@@ -2594,9 +2706,24 @@
             if (!searchTerm) {
                 state.filteredChannels = [...state.channels];
             } else {
+                // Check if search is a number (up to 5 digits)
+                const isNumber = /^\d{1,5}$/.test(searchTerm);
+                
+                if (isNumber) {
+                    // Find channel by number
+                    const channelIndex = findChannelByNumber(searchTerm);
+                    if (channelIndex !== -1) {
+                        selectChannel(channelIndex);
+                        channelSearch.value = ''; // Clear search
+                        return;
+                    }
+                }
+                
+                // Regular text search
                 state.filteredChannels = state.channels.filter(channel => 
                     channel.name.toLowerCase().includes(searchTerm) || 
-                    (channel.group && channel.group.toLowerCase().includes(searchTerm))
+                    (channel.group && channel.group.toLowerCase().includes(searchTerm)) ||
+                    channel.number.toString().includes(searchTerm)
                 );
             }
             
@@ -2605,7 +2732,7 @@
                 if (state.currentChannelIndex >= state.filteredChannels.length) {
                     state.currentChannelIndex = 0;
                 }
-                selectChannel(state.currentChannelIndex);
+                // Don't auto-select when searching
             }
         }
 
@@ -2642,6 +2769,12 @@
                     
                     const bufferPercent = Math.round((bufferSeconds / SimpleBuffer.targetBufferSeconds) * 100);
                     document.getElementById('bufferProgress').textContent = `${bufferPercent}%`;
+                    
+                    // Update buffer size estimate (rough calculation)
+                    const bitrate = 2000; // Assume 2 Mbps average
+                    const bufferSizeMB = (bufferSeconds * bitrate / 8) / 1000;
+                    document.getElementById('bufferSize').textContent = `${bufferSizeMB.toFixed(1)} MB`;
+                    document.getElementById('bitrate').textContent = `${bitrate} kbps`;
                 }
             });
             
@@ -2659,16 +2792,19 @@
                 updatePlayPauseButton();
                 streamStatus.textContent = 'Paused';
                 streamStatus.style.color = '#FF9800';
+                SimpleBuffer.updateBufferStatus('Paused');
             });
             
             videoPlayer.addEventListener('waiting', () => {
                 if (!SimpleBuffer.isBuffering) {
                     SimpleBuffer.showBufferUI(true, 'Buffering...');
+                    SimpleBuffer.updateBufferStatus('Buffering');
                 }
             });
             
             videoPlayer.addEventListener('playing', () => {
                 SimpleBuffer.showBufferUI(false);
+                SimpleBuffer.updateBufferStatus('Playing');
             });
             
             videoPlayer.addEventListener('volumechange', () => {
@@ -2767,13 +2903,26 @@
                     }
                 }
                 
-                // Number keys for direct channel selection
-                if (e.key >= '1' && e.key <= '9') {
-                    e.preventDefault();
-                    const channelNumber = parseInt(e.key);
-                    const channelIndex = state.filteredChannels.findIndex(c => c.number === channelNumber);
-                    if (channelIndex !== -1) {
-                        selectChannel(channelIndex);
+                // Number keys for direct channel selection (up to 5 digits)
+                if (e.key >= '0' && e.key <= '9') {
+                    const currentInput = channelSearch.value;
+                    
+                    // Check if we're typing a multi-digit number (up to 5 digits)
+                    if (/^\d{0,4}$/.test(currentInput) && /^\d$/.test(e.key)) {
+                        e.preventDefault();
+                        const newInput = currentInput + e.key;
+                        
+                        // If we have 1-5 digits, search for channel
+                        if (newInput.length >= 1 && newInput.length <= 5) {
+                            const channelIndex = findChannelByNumber(newInput);
+                            if (channelIndex !== -1) {
+                                selectChannel(channelIndex);
+                                channelSearch.value = ''; // Clear search
+                            } else {
+                                // Show the number in search bar but don't search yet
+                                channelSearch.value = newInput;
+                            }
+                        }
                     }
                 }
                 
@@ -2841,7 +2990,6 @@
     </script>
 </body>
 </html>
-
 
 
 
