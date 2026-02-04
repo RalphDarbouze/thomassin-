@@ -34,6 +34,47 @@
             background: linear-gradient(180deg, #121212 0%, #0a0a0a 100%);
         }
         
+        /* Scrolling Marquee */
+        .marquee-container {
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+            z-index: 101;
+        }
+        
+        .marquee-content {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            white-space: nowrap;
+            animation: marquee 20s linear infinite;
+            font-weight: 600;
+            font-size: 14px;
+            padding-left: 100%;
+        }
+        
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .marquee-icon {
+            margin-right: 10px;
+            font-size: 16px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
         /* Top Bar */
         .top-bar {
             display: flex;
@@ -851,12 +892,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
         /* Custom Scrollbar */
         .channel-list-container::-webkit-scrollbar {
             width: 4px;
@@ -898,6 +933,10 @@
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
+        }
+        
+        body.fullscreen-mode .marquee-container {
+            display: none !important;
         }
         
         body.fullscreen-mode .top-bar,
@@ -1070,9 +1109,26 @@
             .top-controls {
                 display: none;
             }
+            
+            .marquee-content {
+                font-size: 12px;
+            }
         }
         
         @media (max-width: 768px) {
+            .marquee-container {
+                height: 25px;
+            }
+            
+            .marquee-content {
+                font-size: 11px;
+            }
+            
+            .marquee-icon {
+                font-size: 14px;
+                margin-right: 8px;
+            }
+            
             .channel-sidebar {
                 width: 220px;
             }
@@ -1147,6 +1203,18 @@
     
     <!-- Main App Container -->
     <div class="app-container" id="appContainer">
+        <!-- Scrolling Marquee -->
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <i class="fas fa-heart marquee-icon"></i>
+                Le lecteur de Rubis est une courtoisie des résidents de la ville de Thomassin
+                <i class="fas fa-heart marquee-icon" style="margin-left: 20px;"></i>
+                Le lecteur de Rubis est une courtoisie des résidents de la ville de Thomassin
+                <i class="fas fa-heart marquee-icon" style="margin-left: 20px;"></i>
+                Le lecteur de Rubis est une courtoisie des résidents de la ville de Thomassin
+            </div>
+        </div>
+        
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="logo">
@@ -1170,7 +1238,7 @@
                         <button class="buffer-btn" data-buffer="10">10s</button>
                         <button class="buffer-btn" data-buffer="15">15s</button>
                         <button class="buffer-btn" data-buffer="20">20s</button>
-                </div>
+                    </div>
                 </div>
             </div>
             
@@ -2522,6 +2590,12 @@
             
             state.isFullscreen = isFullscreen;
             document.body.classList.toggle('fullscreen-mode', isFullscreen);
+            
+            // Hide marquee in fullscreen mode
+            const marqueeContainer = document.querySelector('.marquee-container');
+            if (marqueeContainer) {
+                marqueeContainer.style.display = isFullscreen ? 'none' : 'block';
+            }
             
             // Update fullscreen button icon
             if (isFullscreen) {
