@@ -34,14 +34,15 @@
             background: linear-gradient(180deg, #121212 0%, #0a0a0a 100%);
         }
         
-        /* Scrolling Marquee - UPDATED FOR SMOOTHER ANIMATION */
+        /* Scrolling Marquee - UPDATED WITH TRANSPARENT BACKGROUND */
         .marquee-container {
-            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.15), rgba(33, 150, 243, 0.15));
             height: 30px;
             overflow: hidden;
             position: relative;
             z-index: 1001;
             will-change: transform;
+            backdrop-filter: blur(5px);
         }
         
         .marquee-content {
@@ -946,7 +947,7 @@
             left: 0 !important;
             width: 100vw !important;
             z-index: 1001 !important;
-            background: linear-gradient(90deg, rgba(76, 175, 80, 0.9), rgba(33, 150, 243, 0.9)) !important;
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.15), rgba(33, 150, 243, 0.15)) !important;
             backdrop-filter: blur(5px) !important;
         }
         
