@@ -313,29 +313,31 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #4CAF50;
-            border-radius: 10px;
-            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #4CAF50;
+            border-radius: 15px;
+            padding: 20px 35px;
             color: white;
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
             z-index: 1000;
             display: none;
             text-align: center;
-            min-width: 100px;
+            min-width: 150px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            letter-spacing: 3px;
         }
         
         .channel-input-feedback.show {
             display: block;
-            animation: fadeInOut 3s ease;
+            animation: fadeInOut 5s ease;
         }
         
         @keyframes fadeInOut {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         }
         
         /* Fullscreen Button - FIXED POSITION */
@@ -1378,10 +1380,12 @@
         const MultiDigitInput = {
             currentInput: '',
             inputTimeout: null,
-            inputDelay: 3000, // 3 seconds delay
+            inputDelay: 5000, // 5 seconds delay for 5-digit input
+            zeroIsFirst: false,
             
             clear() {
                 this.currentInput = '';
+                this.zeroIsFirst = false;
                 if (this.inputTimeout) {
                     clearTimeout(this.inputTimeout);
                     this.inputTimeout = null;
@@ -1395,11 +1399,16 @@
                     clearTimeout(this.inputTimeout);
                 }
                 
+                // Special handling for 0 as first digit
+                if (this.currentInput.length === 0 && digit === '0') {
+                    this.zeroIsFirst = true;
+                }
+                
                 // Add digit to current input
                 this.currentInput += digit;
                 
-                // If we have 3 digits, change channel immediately
-                if (this.currentInput.length >= 3) {
+                // If we have 5 digits (max for 5-digit), change channel immediately
+                if (this.currentInput.length >= 5) {
                     this.selectChannel();
                     return;
                 }
@@ -1434,6 +1443,19 @@
                 if (feedbackEl) {
                     feedbackEl.className = 'channel-input-feedback';
                 }
+            },
+            
+            handleZeroKey() {
+                // If 0 is pressed alone (no digits before it), toggle fullscreen
+                if (this.currentInput.length === 0) {
+                    console.log('0 pressed alone - toggling fullscreen');
+                    toggleFullscreen();
+                    return true; // Indicate we handled it as fullscreen
+                }
+                
+                // If there are digits before 0, treat it as part of channel number
+                this.addDigit('0');
+                return false; // Indicate we handled it as channel input
             },
             
             selectChannel() {
@@ -2759,11 +2781,16 @@
                     MultiDigitInput.addDigit(e.key);
                 }
                 
-                // 0 key for fullscreen toggle
+                // 0 key - special handling
                 if (e.key === '0') {
                     e.preventDefault();
-                    MultiDigitInput.clear();
-                    toggleFullscreen();
+                    // If 0 is pressed alone, toggle fullscreen
+                    // If there are digits before 0, it becomes part of channel number (e.g., 30)
+                    const handledAsFullscreen = MultiDigitInput.handleZeroKey();
+                    if (!handledAsFullscreen) {
+                        // 0 was added to channel input, show overlay
+                        resetOverlayTimer();
+                    }
                 }
                 
                 // Tab to show/hide panels
