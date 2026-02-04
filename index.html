@@ -34,13 +34,14 @@
             background: linear-gradient(180deg, #121212 0%, #0a0a0a 100%);
         }
         
-        /* Scrolling Marquee */
+        /* Scrolling Marquee - UPDATED FOR SMOOTHER ANIMATION */
         .marquee-container {
             background: linear-gradient(90deg, #4CAF50, #2196F3);
             height: 30px;
             overflow: hidden;
             position: relative;
-            z-index: 101;
+            z-index: 1001;
+            will-change: transform;
         }
         
         .marquee-content {
@@ -48,10 +49,12 @@
             align-items: center;
             height: 100%;
             white-space: nowrap;
-            animation: marquee 20s linear infinite;
+            animation: marquee 25s linear infinite;
             font-weight: 600;
             font-size: 14px;
             padding-left: 100%;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            will-change: transform;
         }
         
         @keyframes marquee {
@@ -67,12 +70,13 @@
             margin-right: 10px;
             font-size: 16px;
             animation: pulse 2s infinite;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
         }
         
         /* Top Bar */
@@ -917,7 +921,7 @@
             outline-offset: 2px;
         }
         
-        /* Fullscreen Mode Styles - FIXED */
+        /* Fullscreen Mode Styles - UPDATED TO SHOW MARQUEE */
         body.fullscreen-mode {
             overflow: hidden !important;
             padding: 0 !important;
@@ -936,7 +940,14 @@
         }
         
         body.fullscreen-mode .marquee-container {
-            display: none !important;
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            z-index: 1001 !important;
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.9), rgba(33, 150, 243, 0.9)) !important;
+            backdrop-filter: blur(5px) !important;
         }
         
         body.fullscreen-mode .top-bar,
@@ -947,10 +958,10 @@
         
         body.fullscreen-mode .player-area {
             position: fixed !important;
-            top: 0 !important;
+            top: 30px !important; /* Adjusted to account for marquee */
             left: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
+            height: calc(100vh - 30px) !important; /* Adjusted for marquee height */
             z-index: 9999 !important;
         }
         
@@ -1006,7 +1017,7 @@
         body.fullscreen-mode .channel-info-overlay {
             background: rgba(0, 0, 0, 0.5);
             padding: 8px 15px;
-            margin-top: 15px;
+            margin-top: 40px !important; /* Adjusted for marquee */
             margin-left: 15px;
             font-size: 14px;
         }
@@ -1018,7 +1029,7 @@
         }
         
         body.fullscreen-mode .buffer-stats-display {
-            top: 15px !important;
+            top: 40px !important; /* Adjusted for marquee */
             right: 15px !important;
         }
         
@@ -1026,7 +1037,8 @@
         @media (display-mode: fullscreen) {
             body.fullscreen-mode .player-area {
                 width: 100vw !important;
-                height: 100vh !important;
+                height: calc(100vh - 30px) !important;
+                top: 30px !important;
             }
             
             body.fullscreen-mode #video-player {
@@ -1122,6 +1134,7 @@
             
             .marquee-content {
                 font-size: 11px;
+                animation: marquee 20s linear infinite;
             }
             
             .marquee-icon {
@@ -1179,6 +1192,20 @@
             
             .viewer-counter i {
                 font-size: 12px;
+            }
+            
+            /* Adjust for fullscreen on mobile */
+            body.fullscreen-mode .player-area {
+                top: 25px !important;
+                height: calc(100vh - 25px) !important;
+            }
+            
+            body.fullscreen-mode .channel-info-overlay {
+                margin-top: 35px !important;
+            }
+            
+            body.fullscreen-mode .buffer-stats-display {
+                top: 35px !important;
             }
         }
         
@@ -2591,10 +2618,10 @@
             state.isFullscreen = isFullscreen;
             document.body.classList.toggle('fullscreen-mode', isFullscreen);
             
-            // Hide marquee in fullscreen mode
+            // Marquee stays visible in fullscreen mode
             const marqueeContainer = document.querySelector('.marquee-container');
             if (marqueeContainer) {
-                marqueeContainer.style.display = isFullscreen ? 'none' : 'block';
+                marqueeContainer.style.display = 'block';
             }
             
             // Update fullscreen button icon
