@@ -1,150 +1,112 @@
+// server.js
 const express = require('express');
-const http = require('http');
-const WebSocket = require('ws');
 const cors = require('cors');
-
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
 app.use(cors());
 app.use(express.json());
 
-// Store viewer counts
-const viewerCounts = new Map();
-const connections = new Map();
+// Store active sessions
+const sessions = new Map();
 
-// WebSocket connection handler
-wss.on('connection', (ws, req) => {
-    const clientId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    console.log(`🟢 New connection: ${clientId}`);
-    
-    ws.clientId = clientId;
-    ws.currentChannel = null;
-    
-    connections.set(clientId, {
-        ws: ws,
-        connectedAt: Date.now(),
-        currentChannel: null
-    });
-    
-    // Send welcome message
-    ws.send(JSON.stringify({
-        type: 'welcome',
-        clientId: clientId,
-        message: 'Connected to RUBIS TV Live Viewer Server'
-    }));
-    
-    // Handle messages
-    ws.on('message', (message) => {
-        try {
-            const data = JSON.parse(message);
-            
-            if (data.type === 'subscribe') {
-                const channelId = data.channelId || 'default';
-                
-                // Remove from old channel
-                if (ws.currentChannel) {
-                    const oldCount = viewerCounts.get(ws.currentChannel) || 0;
-                    viewerCounts.set(ws.currentChannel, Math.max(0, oldCount - 1));
-                    broadcastViewerCount(ws.currentChannel);
-                }
-                
-                // Add to new channel
-                ws.currentChannel = channelId;
-                connections.get(clientId).currentChannel = channelId;
-                
-                const currentCount = viewerCounts.get(channelId) || 0;
-                viewerCounts.set(channelId, currentCount + 1);
-                
-                console.log(`👥 ${clientId} subscribed to ${channelId} (${viewerCounts.get(channelId)} viewers)`);
-                
-                // Send confirmation
-                ws.send(JSON.stringify({
-                    type: 'subscribed',
-                    channelId: channelId,
-                    viewers: viewerCounts.get(channelId)
-                }));
-                
-                // Broadcast to all
-                broadcastViewerCount(channelId);
-            }
-            else if (data.type === 'ping') {
-                ws.send(JSON.stringify({
-                    type: 'pong',
-                    timestamp: Date.now()
-                }));
-            }
-        } catch (error) {
-            console.error('Error processing message:', error);
+// Clean up stale sessions every 30 seconds
+setInterval(() => {
+    const now = Date.now();
+    let removed = 0;
+    for (const [id, data] of sessions.entries()) {
+        if (now - data.lastPing > 30000) { // 30 seconds timeout
+            sessions.delete(id);
+            removed++;
         }
-    });
-    
-    // Handle disconnection
-    ws.on('close', () => {
-        console.log(`🔴 Connection closed: ${clientId}`);
-        
-        // Remove from current channel
-        if (ws.currentChannel) {
-            const currentCount = viewerCounts.get(ws.currentChannel) || 1;
-            viewerCounts.set(ws.currentChannel, Math.max(0, currentCount - 1));
-            broadcastViewerCount(ws.currentChannel);
-        }
-        
-        connections.delete(clientId);
-    });
-    
-    // Send current stats
-    ws.send(JSON.stringify({
-        type: 'stats',
-        totalConnections: connections.size,
-        totalViewers: Array.from(viewerCounts.values()).reduce((a, b) => a + b, 0),
-        timestamp: Date.now()
-    }));
-});
+    }
+    if (removed > 0) {
+        console.log(`🧹 Cleaned ${removed} stale sessions. Active: ${sessions.size}`);
+    }
+}, 30000);
 
-// Broadcast viewer count to all clients
-function broadcastViewerCount(channelId) {
-    const count = viewerCounts.get(channelId) || 0;
-    
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN && client.currentChannel === channelId) {
-            client.send(JSON.stringify({
-                type: 'channel_viewers',
-                channelId: channelId,
-                count: count,
-                timestamp: Date.now()
-            }));
-        }
-    });
-}
-
-// API endpoints
-app.get('/api/stats', (req, res) => {
-    res.json({
+// Health check endpoint
+app.get('/api/status', (req, res) => {
+    res.json({ 
         status: 'online',
-        server: 'RUBIS TV Viewer Tracker',
-        version: '1.0.0',
-        totalConnections: connections.size,
-        totalViewers: Array.from(viewerCounts.values()).reduce((a, b) => a + b, 0),
-        channels: Array.from(viewerCounts.entries()).map(([channel, viewers]) => ({
-            channel: channel,
-            viewers: viewers
-        })),
-        uptime: process.uptime(),
+        viewers: sessions.size,
         timestamp: Date.now()
     });
 });
 
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'healthy', timestamp: Date.now() });
+// Heartbeat endpoint - viewer reports they're still here
+app.post('/api/viewer/heartbeat', (req, res) => {
+    const { sessionId, userAgent, timestamp } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ 
+            success: false, 
+            error: 'sessionId required' 
+        });
+    }
+    
+    // Update or create session
+    const now = Date.now();
+    const existing = sessions.get(sessionId);
+    
+    sessions.set(sessionId, {
+        lastPing: now,
+        joinedAt: existing ? existing.joinedAt : now,
+        userAgent: userAgent || 'unknown',
+        pingCount: existing ? existing.pingCount + 1 : 1
+    });
+    
+    // Send back the current viewer count
+    res.json({ 
+        success: true, 
+        viewers: sessions.size,
+        sessionId,
+        timestamp: now
+    });
 });
 
-// Start server
+// Leave endpoint - viewer explicitly leaves
+app.post('/api/viewer/leave', (req, res) => {
+    const { sessionId } = req.body;
+    if (sessionId) {
+        sessions.delete(sessionId);
+        console.log(`👋 Viewer ${sessionId} left. Active: ${sessions.size}`);
+    }
+    res.json({ 
+        success: true, 
+        viewers: sessions.size 
+    });
+});
+
+// Get current viewer count
+app.get('/api/viewers', (req, res) => {
+    res.json({ 
+        viewers: sessions.size,
+        timestamp: Date.now()
+    });
+});
+
+// Get detailed viewer info (admin only - optional)
+app.get('/api/viewers/details', (req, res) => {
+    const details = Array.from(sessions.entries()).map(([id, data]) => ({
+        sessionId: id,
+        joinedAt: new Date(data.joinedAt).toISOString(),
+        lastPing: new Date(data.lastPing).toISOString(),
+        userAgent: data.userAgent,
+        pingCount: data.pingCount
+    }));
+    res.json({
+        total: sessions.size,
+        viewers: details
+    });
+});
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 RUBIS TV Viewer Server running on port ${PORT}`);
-    console.log(`📡 WebSocket: ws://localhost:${PORT}`);
-    console.log(`📊 Stats API: http://localhost:${PORT}/api/stats`);
-    console.log(`❤️  Health check: http://localhost:${PORT}/api/health`);
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 API endpoints:`);
+    console.log(`   GET  /api/status`);
+    console.log(`   GET  /api/viewers`);
+    console.log(`   GET  /api/viewers/details`);
+    console.log(`   POST /api/viewer/heartbeat`);
+    console.log(`   POST /api/viewer/leave`);
 });
