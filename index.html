@@ -763,6 +763,132 @@
     (function() {
         "use strict";
 
+        // ============================================
+        // VIEWER COUNTER - REAL REST API INTEGRATION
+        // ============================================
+        
+        // Configuration - Change this to your server URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // Generate a unique session ID for this viewer
+        function generateSessionId() {
+            return 'viewer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // Get or create session ID (persist in localStorage)
+        let sessionId = localStorage.getItem('rubisTvSessionId');
+        if (!sessionId) {
+            sessionId = generateSessionId();
+            localStorage.setItem('rubisTvSessionId', sessionId);
+        }
+        
+        let heartbeatInterval = null;
+        let isViewerConnected = false;
+        
+        // Send heartbeat to server
+        async function sendHeartbeat() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/viewer/heartbeat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        sessionId,
+                        userAgent: navigator.userAgent,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isViewerConnected = true;
+                    // Update viewer count in UI
+                    const viewerCountEl = document.getElementById('viewerCount');
+                    if (viewerCountEl && typeof data.viewers === 'number') {
+                        viewerCountEl.textContent = data.viewers;
+                    }
+                }
+            } catch (error) {
+                console.error('Heartbeat failed:', error);
+                isViewerConnected = false;
+                // If server is down, show "?" to indicate connection issue
+                const viewerCountEl = document.getElementById('viewerCount');
+                if (viewerCountEl) {
+                    viewerCountEl.textContent = '?';
+                }
+            }
+        }
+        
+        // Send leave notification when user leaves
+        async function sendLeaveNotification() {
+            try {
+                await fetch(`${API_BASE_URL}/viewer/leave`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+            } catch (e) {
+                // Ignore errors on page unload
+            }
+        }
+        
+        // Initialize real viewer counter
+        function initViewerCounter() {
+            // Send initial heartbeat
+            sendHeartbeat();
+            
+            // Send heartbeat every 10 seconds
+            heartbeatInterval = setInterval(sendHeartbeat, 10000);
+            
+            // Send leave notification when user leaves the page
+            window.addEventListener('beforeunload', sendLeaveNotification);
+            window.addEventListener('pagehide', sendLeaveNotification);
+            
+            // Also send leave when tab is hidden (optional)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Tab is hidden, we could reduce heartbeat frequency
+                    // Or send a "away" status if you implement it
+                }
+            });
+        }
+        
+        // Check server status on startup
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/status`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Viewer server is online');
+                    return true;
+                }
+            } catch (e) {
+                console.warn('⚠️ Viewer server is offline - using fallback mode');
+                // Fallback: show a simulated count with a "demo" indicator
+                const viewerCountEl = document.getElementById('viewerCount');
+                if (viewerCountEl) {
+                    viewerCountEl.textContent = '0';
+                }
+                return false;
+            }
+            return false;
+        }
+        
+        // ============================================
+        // END VIEWER COUNTER INTEGRATION
+        // ============================================
+
         const state = {
             channels: [],
             filtered: [],
@@ -1140,6 +1266,11 @@
         });
 
         function init() {
+            // Check server status and initialize viewer counter
+            checkServerStatus().then(() => {
+                initViewerCounter();
+            });
+
             loadPlaylist();
 
             playBtn.addEventListener('click', togglePlay);
@@ -1187,13 +1318,6 @@
                 statNetworkSpeed.textContent = speed + ' Mbps';
                 perfNetwork.textContent = speed + ' Mbps';
             }, 3000);
-
-            let viewers = 0;
-            setInterval(() => {
-                viewers = Math.max(0, viewers + Math.floor(Math.random() * 6) - 2);
-                if (viewers < 2) viewers = 2 + Math.floor(Math.random() * 20);
-                viewerCount.textContent = viewers;
-            }, 4000);
 
             document.querySelectorAll('#bufferPreset button').forEach(btn => {
                 btn.addEventListener('click', () => {
