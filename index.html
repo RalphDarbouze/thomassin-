@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RUBIS TV 2026 - Premium Edition</title>
+    <title>RUBIS TV 2026 - Premium Glass Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         /* ============================================================
-           PREMIUM MODERN DESIGN - Glassmorphism + Translucent
+           PREMIUM GLASS DESIGN - Full Glassmorphism
            ============================================================ */
         * {
             margin: 0;
@@ -18,16 +18,16 @@
         }
         
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            --glass-blur: blur(20px);
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --glass-blur: blur(24px);
             --primary: #4CAF50;
-            --primary-glow: rgba(76, 175, 80, 0.3);
+            --primary-glow: rgba(76, 175, 80, 0.4);
             --accent: #2196F3;
             --text-primary: rgba(255, 255, 255, 0.92);
             --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.35);
+            --text-muted: rgba(255, 255, 255, 0.3);
         }
         
         html, body {
@@ -38,22 +38,22 @@
         }
         
         body {
-            background: radial-gradient(ellipse at 50% 0%, #14141e 0%, #0a0a0f 100%);
+            background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a0f 100%);
             color: #ffffff;
             min-height: 100vh;
         }
         
         /* ============================================================
-           APP CONTAINER - Premium Glass
+           APP CONTAINER - Full Glass
            ============================================================ */
         .app-container {
             display: none;
             flex-direction: column;
             width: 100%;
             height: 100vh;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
         
         .app-container.visible {
@@ -61,20 +61,33 @@
         }
         
         /* ============================================================
-           MARQUEE - Premium Animated
+           MARQUEE - Glowing Glass
            ============================================================ */
         .marquee-container {
-            background: linear-gradient(90deg, 
-                rgba(76, 175, 80, 0.06), 
-                rgba(33, 150, 243, 0.06), 
-                rgba(76, 175, 80, 0.06));
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(76, 175, 80, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(76, 175, 80, 0.08);
             height: 32px;
             overflow: hidden;
             position: relative;
             z-index: 1001;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .marquee-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(76, 175, 80, 0.05), 
+                rgba(33, 150, 243, 0.05), 
+                transparent);
+            pointer-events: none;
         }
         
         .marquee-content {
@@ -86,15 +99,18 @@
             font-weight: 500;
             font-size: 13px;
             padding-left: 100%;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
         }
         
         .marquee-content span {
-            background: linear-gradient(90deg, #4CAF50, #2196F3, #4CAF50);
+            background: linear-gradient(90deg, #4CAF50, #60a5fa, #4CAF50);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: shimmer 4s linear infinite;
+            text-shadow: 0 0 40px rgba(76, 175, 80, 0.1);
         }
         
         .marquee-icon {
@@ -102,6 +118,7 @@
             font-size: 14px;
             -webkit-text-fill-color: #4CAF50;
             animation: pulse-glow 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.3));
         }
         
         @keyframes marquee {
@@ -115,8 +132,8 @@
         }
         
         @keyframes pulse-glow {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.15); }
+            0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.2)); }
+            50% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 30px rgba(76, 175, 80, 0.5)); }
         }
         
         /* ============================================================
@@ -127,12 +144,13 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 24px;
-            background: rgba(20, 20, 30, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(20, 20, 40, 0.5);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             z-index: 100;
             height: 56px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
         
         .logo {
@@ -144,25 +162,27 @@
         .logo-icon {
             color: #4CAF50;
             font-size: 22px;
-            filter: drop-shadow(0 0 20px rgba(76, 175, 80, 0.3));
+            filter: drop-shadow(0 0 30px rgba(76, 175, 80, 0.4));
             animation: pulse-glow 3s ease-in-out infinite;
         }
         
         .logo-text {
             font-size: 20px;
             font-weight: 800;
-            background: linear-gradient(135deg, #4CAF50, #2196F3, #4CAF50);
+            background: linear-gradient(135deg, #4CAF50, #60a5fa, #4CAF50);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: shimmer 3s linear infinite;
             letter-spacing: -0.5px;
+            text-shadow: 0 0 60px rgba(76, 175, 80, 0.1);
         }
         
         .logo-year {
             -webkit-text-fill-color: #FF9800;
             background: none;
             font-weight: 700;
+            text-shadow: 0 0 30px rgba(255, 152, 0, 0.3);
         }
         
         .top-controls {
@@ -172,34 +192,40 @@
         }
         
         /* ============================================================
-           GLASS COMPONENTS
+           GLASS BADGE - Full Glass Effect
            ============================================================ */
         .glass-badge {
             background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 10px;
-            padding: 6px 16px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 12px;
+            padding: 6px 18px;
             border: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         
         .glass-badge:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(76, 175, 80, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.1);
         }
         
         .glass-badge .icon {
             font-size: 14px;
             color: #4CAF50;
+            filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.3));
         }
         
         .glass-badge .label {
-            font-size: 11px;
-            color: var(--text-secondary);
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .glass-badge .value {
@@ -211,32 +237,33 @@
         /* Buffer Controls - Glass */
         .buffer-control {
             background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 10px;
-            padding: 4px 10px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 12px;
+            padding: 4px 12px;
             border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         
         .buffer-label {
-            font-size: 9px;
+            font-size: 8px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             margin-bottom: 2px;
             text-align: center;
         }
         
         .buffer-buttons {
             display: flex;
-            gap: 3px;
+            gap: 4px;
         }
         
         .buffer-btn {
-            padding: 2px 8px;
+            padding: 2px 10px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--text-secondary);
             cursor: pointer;
             font-size: 10px;
@@ -247,13 +274,15 @@
         .buffer-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: white;
+            border-color: rgba(255, 255, 255, 0.1);
         }
         
         .buffer-btn.active {
-            background: rgba(76, 175, 80, 0.2);
+            background: rgba(76, 175, 80, 0.15);
             border-color: rgba(76, 175, 80, 0.3);
             color: #4CAF50;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.05);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.1);
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
         
         .current-time {
@@ -263,31 +292,26 @@
             letter-spacing: 0.5px;
             min-width: 60px;
             text-align: right;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
         
         /* ============================================================
-           MAIN CONTENT
-           ============================================================ */
-        .main-content {
-            display: flex;
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* ============================================================
-           CHANNEL SIDEBAR - Premium Glass
+           CHANNEL SIDEBAR - Glass
            ============================================================ */
         .channel-sidebar {
             width: 290px;
-            background: rgba(15, 15, 25, 0.7);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: rgba(15, 15, 35, 0.6);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-right: 1px solid rgba(255, 255, 255, 0.04);
             display: flex;
             flex-direction: column;
             z-index: 10;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 40px rgba(0, 0, 0, 0.3);
         }
         
         .channel-sidebar.hidden {
@@ -300,12 +324,13 @@
         }
         
         .channel-list-header h2 {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: #4CAF50;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 14px;
+            text-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
         }
         
         .search-box {
@@ -324,19 +349,20 @@
         #channel-search {
             width: 100%;
             padding: 10px 14px 10px 40px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
+            border-radius: 12px;
             color: white;
             font-size: 13px;
             outline: none;
             transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
         }
         
         #channel-search:focus {
             border-color: rgba(76, 175, 80, 0.3);
             background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.03);
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.05);
         }
         
         #channel-search::placeholder {
@@ -369,7 +395,7 @@
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             margin-bottom: 8px;
             padding: 0 8px;
             font-weight: 600;
@@ -380,22 +406,35 @@
             align-items: center;
             padding: 10px 12px;
             margin: 2px 0;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 2px solid transparent;
             position: relative;
+            background: rgba(255, 255, 255, 0.01);
         }
         
         .channel-item:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
             transform: translateX(4px);
+            border-color: rgba(76, 175, 80, 0.1);
         }
         
         .channel-item.active {
-            background: rgba(76, 175, 80, 0.08);
+            background: rgba(76, 175, 80, 0.06);
             border-left-color: #4CAF50;
-            box-shadow: 0 0 40px rgba(76, 175, 80, 0.02);
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.03);
+        }
+        
+        .channel-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #4CAF50, #60a5fa);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
         
         .channel-item:focus {
@@ -406,7 +445,7 @@
         .channel-logo {
             width: 34px;
             height: 34px;
-            border-radius: 8px;
+            border-radius: 10px;
             background: linear-gradient(135deg, #2196F3, #4CAF50);
             display: flex;
             align-items: center;
@@ -416,7 +455,13 @@
             font-size: 12px;
             font-weight: 700;
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .channel-item:hover .channel-logo {
+            transform: scale(1.05);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
         
         .channel-info {
@@ -445,13 +490,14 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             margin-left: 8px;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
         
         .channel-item.active .channel-playing {
             opacity: 1;
         }
         
-        /* Custom Scrollbar */
+        /* Custom Scrollbar - Glass */
         .channel-list-container::-webkit-scrollbar {
             width: 4px;
         }
@@ -460,11 +506,11 @@
             border-radius: 2px;
         }
         .channel-list-container::-webkit-scrollbar-thumb {
-            background: rgba(76, 175, 80, 0.2);
+            background: rgba(76, 175, 80, 0.15);
             border-radius: 2px;
         }
         .channel-list-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(76, 175, 80, 0.3);
+            background: rgba(76, 175, 80, 0.25);
         }
         
         /* ============================================================
@@ -485,18 +531,18 @@
         }
         
         /* ============================================================
-           CHANNEL INPUT FEEDBACK - Premium Glass
+           CHANNEL INPUT FEEDBACK - Glass
            ============================================================ */
         .channel-input-feedback {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(76, 175, 80, 0.2);
-            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(76, 175, 80, 0.15);
+            border-radius: 20px;
             padding: 24px 44px;
             color: white;
             font-size: 40px;
@@ -505,7 +551,7 @@
             display: none;
             text-align: center;
             min-width: 140px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(76, 175, 80, 0.05);
             letter-spacing: 4px;
             text-shadow: 0 0 40px rgba(76, 175, 80, 0.2);
         }
@@ -523,17 +569,17 @@
         }
         
         /* ============================================================
-           FULLSCREEN BUTTON - Premium Glass
+           FULLSCREEN BUTTON - Glass
            ============================================================ */
         .fullscreen-btn {
             position: absolute;
             bottom: 24px;
             right: 24px;
             z-index: 50;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 50%;
             width: 48px;
             height: 48px;
@@ -543,43 +589,46 @@
             color: white;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.5;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
         
         .fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
             opacity: 1;
             transform: scale(1.1);
             border-color: rgba(76, 175, 80, 0.2);
+            box-shadow: 0 4px 40px rgba(76, 175, 80, 0.1);
         }
         
         .fullscreen-btn .fullscreen-in { display: block; }
         .fullscreen-btn .fullscreen-out { display: none; }
         
         /* ============================================================
-           VIEWER COUNTER - Premium Glass
+           VIEWER COUNTER - Premium Glowing Glass
            ============================================================ */
         .viewer-counter {
             position: absolute;
             bottom: 24px;
             right: 90px;
             z-index: 50;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(76, 175, 80, 0.15);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(76, 175, 80, 0.12);
             border-radius: 30px;
-            padding: 8px 18px 8px 16px;
+            padding: 8px 20px 8px 18px;
             display: none;
             align-items: center;
             gap: 10px;
             color: white;
             font-size: 13px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.7;
             cursor: default;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
         
         .viewer-counter.visible {
@@ -587,15 +636,17 @@
         }
         
         .viewer-counter:hover {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
             opacity: 1;
             transform: scale(1.03);
-            border-color: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.25);
+            box-shadow: 0 4px 40px rgba(76, 175, 80, 0.1);
         }
         
         .viewer-counter i {
             color: #4CAF50;
             font-size: 14px;
+            filter: drop-shadow(0 0 20px rgba(76, 175, 80, 0.4));
         }
         
         .viewer-counter .count {
@@ -604,6 +655,7 @@
             min-width: 30px;
             text-align: center;
             font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
         }
         
         .viewer-counter .status-dot {
@@ -612,38 +664,43 @@
             border-radius: 50%;
             flex-shrink: 0;
             transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
         
         .viewer-counter .status-dot.connected {
             background: #4CAF50;
-            box-shadow: 0 0 16px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
         }
         
         .viewer-counter .status-dot.connecting {
             background: #FF9800;
             animation: pulse-dot 1.2s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.3);
         }
         
         .viewer-counter .status-dot.disconnected {
             background: #F44336;
+            box-shadow: 0 0 30px rgba(244, 67, 54, 0.2);
         }
         
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
+            50% { opacity: 0.3; transform: scale(0.6); }
         }
         
         .viewer-counter .count.animate {
             animation: countPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #4CAF50;
+            text-shadow: 0 0 40px rgba(76, 175, 80, 0.5);
         }
         
         @keyframes countPop {
-            0% { transform: scale(0.8); opacity: 0.5; }
+            0% { transform: scale(0.6); opacity: 0.3; }
             100% { transform: scale(1); opacity: 1; }
         }
         
         /* ============================================================
-           BUFFERING OVERLAY - Premium Glass
+           BUFFERING OVERLAY - Glass
            ============================================================ */
         .buffering-overlay {
             position: absolute;
@@ -651,9 +708,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -672,12 +729,12 @@
         .buffering-spinner {
             width: 56px;
             height: 56px;
-            border: 3px solid rgba(76, 175, 80, 0.1);
+            border: 3px solid rgba(76, 175, 80, 0.08);
             border-top: 3px solid #4CAF50;
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
             margin-bottom: 20px;
-            box-shadow: 0 0 60px rgba(76, 175, 80, 0.05);
+            box-shadow: 0 0 80px rgba(76, 175, 80, 0.08);
         }
         
         @keyframes spin {
@@ -690,24 +747,26 @@
             font-weight: 500;
             color: #4CAF50;
             margin-bottom: 10px;
-            text-shadow: 0 0 40px rgba(76, 175, 80, 0.1);
+            text-shadow: 0 0 60px rgba(76, 175, 80, 0.15);
         }
         
         .buffering-progress {
             width: 280px;
             height: 4px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 2px;
             overflow: hidden;
             margin-top: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
         }
         
         .buffering-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            background: linear-gradient(90deg, #4CAF50, #60a5fa);
             width: 0%;
             transition: width 0.4s ease;
             border-radius: 2px;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
         }
         
         .buffering-timer {
@@ -718,25 +777,26 @@
         }
         
         /* ============================================================
-           BUFFER STATS DISPLAY - Premium Glass
+           BUFFER STATS - Glass
            ============================================================ */
         .buffer-stats-display {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 16px;
             padding: 16px 20px;
             min-width: 190px;
             z-index: 15;
             border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.3s ease;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
         }
         
         .buffer-stats-display:hover {
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             border-color: rgba(255, 255, 255, 0.06);
         }
         
@@ -745,8 +805,9 @@
             color: #4CAF50;
             margin-bottom: 10px;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(76, 175, 80, 0.1);
         }
         
         .buffer-stat-item {
@@ -766,7 +827,7 @@
         }
         
         /* ============================================================
-           PLAYER OVERLAY - Premium Glass
+           PLAYER OVERLAY - Glass
            ============================================================ */
         .player-overlay {
             position: absolute;
@@ -793,18 +854,21 @@
         }
         
         .channel-info-overlay {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 12px 22px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 12px 24px;
             max-width: 420px;
-            border-radius: 0 14px 14px 0;
+            border-radius: 0 16px 16px 0;
             border-left: 3px solid #4CAF50;
             transform: translateY(-100%);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
             opacity: 0;
             margin-top: 16px;
             margin-left: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-left-width: 3px;
         }
         
         .player-overlay.active .channel-info-overlay {
@@ -816,36 +880,37 @@
             font-size: 16px;
             font-weight: 600;
             color: var(--text-primary);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
             letter-spacing: -0.2px;
         }
         
         .current-channel-group {
             font-size: 11px;
             color: rgba(76, 175, 80, 0.7);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
             letter-spacing: 0.5px;
             margin-top: 2px;
         }
         
         /* ============================================================
-           PLAYER CONTROLS - Premium Glass
+           PLAYER CONTROLS - Glass
            ============================================================ */
         .player-controls {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            padding: 10px 22px;
-            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 10px 24px;
+            border-radius: 18px;
             margin: 0 auto 24px;
             transform: translateY(100%);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
             opacity: 0;
             border: 1px solid rgba(255, 255, 255, 0.04);
             gap: 14px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
         }
         
         .player-overlay.active .player-controls {
@@ -863,7 +928,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.04);
             color: var(--text-secondary);
             cursor: pointer;
@@ -878,19 +943,21 @@
             background: rgba(255, 255, 255, 0.08);
             color: white;
             transform: scale(1.05);
+            border-color: rgba(76, 175, 80, 0.1);
         }
         
         .control-btn.play-pause {
-            background: rgba(76, 175, 80, 0.15);
+            background: rgba(76, 175, 80, 0.12);
             width: 44px;
             height: 44px;
             font-size: 16px;
-            border-color: rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.1);
         }
         
         .control-btn.play-pause:hover {
-            background: rgba(76, 175, 80, 0.25);
+            background: rgba(76, 175, 80, 0.2);
             transform: scale(1.08);
+            border-color: rgba(76, 175, 80, 0.2);
         }
         
         .volume-control {
@@ -903,7 +970,7 @@
         .volume-slider {
             width: 70px;
             height: 3px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 2px;
             outline: none;
             -webkit-appearance: none;
@@ -916,7 +983,7 @@
             border-radius: 50%;
             background: #4CAF50;
             cursor: pointer;
-            box-shadow: 0 0 24px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
         }
         
         .volume-slider::-moz-range-thumb {
@@ -926,7 +993,7 @@
             background: #4CAF50;
             cursor: pointer;
             border: none;
-            box-shadow: 0 0 24px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
         }
         
         .volume-icon {
@@ -945,7 +1012,7 @@
         }
         
         /* ============================================================
-           PROGRESS BAR
+           PROGRESS BAR - Glowing
            ============================================================ */
         .progress-bar {
             position: absolute;
@@ -953,26 +1020,27 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             z-index: 5;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            background: linear-gradient(90deg, #4CAF50, #60a5fa);
             width: 0%;
             transition: width 0.15s ease;
             border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
         }
         
         /* ============================================================
-           INFO PANEL - Premium Glass
+           INFO PANEL - Glass
            ============================================================ */
         .info-panel {
             width: 290px;
-            background: rgba(15, 15, 25, 0.7);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: rgba(15, 15, 35, 0.6);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-left: 1px solid rgba(255, 255, 255, 0.04);
             padding: 16px;
             display: flex;
@@ -980,6 +1048,7 @@
             gap: 12px;
             z-index: 10;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -4px 0 40px rgba(0, 0, 0, 0.3);
         }
         
         .info-panel.hidden {
@@ -988,9 +1057,10 @@
         
         .panel-section {
             background: rgba(255, 255, 255, 0.02);
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 16px;
             border: 1px solid rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
         }
         
         .panel-title {
@@ -1001,8 +1071,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(76, 175, 80, 0.1);
         }
         
         .now-playing-info {
@@ -1012,7 +1083,7 @@
         .now-playing-logo {
             width: 56px;
             height: 56px;
-            border-radius: 14px;
+            border-radius: 16px;
             background: linear-gradient(135deg, #2196F3, #4CAF50);
             display: flex;
             align-items: center;
@@ -1021,7 +1092,13 @@
             font-size: 18px;
             font-weight: 700;
             color: white;
-            box-shadow: 0 8px 32px rgba(76, 175, 80, 0.12);
+            box-shadow: 0 8px 40px rgba(76, 175, 80, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .now-playing-logo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 60px rgba(76, 175, 80, 0.2);
         }
         
         .now-playing-name {
@@ -1061,7 +1138,7 @@
         
         .stream-status {
             display: inline-block;
-            padding: 2px 12px;
+            padding: 2px 14px;
             border-radius: 20px;
             font-size: 10px;
             font-weight: 600;
@@ -1069,32 +1146,34 @@
         }
         
         .stream-status.live {
-            background: rgba(76, 175, 80, 0.15);
+            background: rgba(76, 175, 80, 0.12);
             color: #4CAF50;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.05);
         }
         .stream-status.buffering {
-            background: rgba(255, 152, 0, 0.15);
+            background: rgba(255, 152, 0, 0.12);
             color: #FF9800;
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.05);
         }
         .stream-status.paused {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--text-secondary);
         }
         .stream-status.offline {
-            background: rgba(244, 67, 54, 0.15);
+            background: rgba(244, 67, 54, 0.12);
             color: #F44336;
         }
         
         .panel-shortcuts {
             font-size: 11px;
             color: var(--text-muted);
-            line-height: 1.8;
+            line-height: 2;
         }
         
         .panel-shortcuts kbd {
             background: rgba(255, 255, 255, 0.04);
-            padding: 1px 8px;
-            border-radius: 4px;
+            padding: 1px 10px;
+            border-radius: 6px;
             font-size: 10px;
             color: var(--text-secondary);
             border: 1px solid rgba(255, 255, 255, 0.04);
@@ -1109,26 +1188,29 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0a0a0f;
+            background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a0f 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            transition: opacity 0.6s ease;
         }
         
         .loading-screen.hidden {
-            display: none;
+            opacity: 0;
+            pointer-events: none;
         }
         
         .loading-screen .spinner {
             width: 64px;
             height: 64px;
-            border: 3px solid rgba(76, 175, 80, 0.08);
+            border: 3px solid rgba(76, 175, 80, 0.06);
             border-top: 3px solid #4CAF50;
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
             margin-bottom: 24px;
+            box-shadow: 0 0 80px rgba(76, 175, 80, 0.05);
         }
         
         .loading-screen h2 {
@@ -1136,6 +1218,7 @@
             font-size: 26px;
             font-weight: 700;
             letter-spacing: 2px;
+            text-shadow: 0 0 60px rgba(76, 175, 80, 0.1);
         }
         
         .loading-screen p {
@@ -1149,6 +1232,10 @@
             margin-top: 16px;
             font-size: 14px;
             display: none;
+            background: rgba(244, 67, 54, 0.05);
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(244, 67, 54, 0.1);
         }
         
         .loading-screen .error.visible {
@@ -1157,16 +1244,17 @@
         
         .loading-screen .retry-btn {
             margin-top: 16px;
-            padding: 10px 30px;
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            border-radius: 8px;
+            padding: 10px 32px;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 10px;
             color: #4CAF50;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s ease;
             display: none;
+            backdrop-filter: blur(8px);
         }
         
         .loading-screen .retry-btn.visible {
@@ -1174,8 +1262,9 @@
         }
         
         .loading-screen .retry-btn:hover {
-            background: rgba(76, 175, 80, 0.3);
+            background: rgba(76, 175, 80, 0.2);
             transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.1);
         }
         
         /* ============================================================
@@ -1196,7 +1285,7 @@
             left: 0 !important;
             width: 100vw !important;
             z-index: 1001 !important;
-            background: rgba(76, 175, 80, 0.04) !important;
+            background: rgba(0, 0, 0, 0.3) !important;
         }
         
         body.fullscreen-mode .top-bar,
@@ -1239,11 +1328,11 @@
         body.fullscreen-mode .channel-info-overlay {
             margin-top: 44px !important;
             margin-left: 20px !important;
-            background: rgba(0, 0, 0, 0.3) !important;
+            background: rgba(0, 0, 0, 0.2) !important;
         }
         
         body.fullscreen-mode .player-controls {
-            background: rgba(0, 0, 0, 0.3) !important;
+            background: rgba(0, 0, 0, 0.2) !important;
             margin-bottom: 20px !important;
         }
         
@@ -1291,7 +1380,7 @@
         }
         
         *:focus {
-            outline: 2px solid rgba(76, 175, 80, 0.2);
+            outline: 2px solid rgba(76, 175, 80, 0.15);
             outline-offset: 2px;
         }
     </style>
@@ -1380,7 +1469,7 @@
                     <i class="fas fa-compress fullscreen-out"></i>
                 </button>
                 
-                <!-- Viewer Counter -->
+                <!-- Viewer Counter - Fixed with Glowing Glass -->
                 <div class="viewer-counter" id="viewerCounter">
                     <i class="fas fa-users"></i>
                     <span class="count" id="viewerCount">0</span>
@@ -1739,7 +1828,7 @@
         };
 
         // ============================================================
-        // VIEWER COUNTER
+        // VIEWER COUNTER - FIXED with proper connection
         // ============================================================
         const ViewerCounter = {
             ws: null,
@@ -1755,54 +1844,83 @@
                 el.classList.add('visible');
                 this.setStatus('connecting');
                 this.connect();
+                console.log('👥 Viewer Counter initialized');
             },
             
             connect() {
                 try {
                     this.ws = new WebSocket(this.wsUrl);
+                    
                     this.ws.onopen = () => {
                         console.log('👥 Viewer WS connected');
                         this.connected = true;
                         this.reconnectAttempts = 0;
                         this.setStatus('connected');
-                        if (this.channelId) this.subscribe(this.channelId);
+                        // If we have a channel, subscribe
+                        if (this.channelId) {
+                            this.subscribe(this.channelId);
+                        } else if (state.currentIndex >= 0 && state.filtered[state.currentIndex]) {
+                            this.subscribe(state.filtered[state.currentIndex]);
+                        }
                     };
+                    
                     this.ws.onmessage = (e) => {
                         try {
                             const data = JSON.parse(e.data);
+                            console.log('📨 WS message:', data.type);
+                            
                             if (data.type === 'subscribed' || data.type === 'viewer_count') {
+                                const count = data.viewers || data.count || 0;
                                 if (data.channelId === this.channelId || !data.channelId) {
-                                    this.updateCount(data.viewers || data.count || 0);
+                                    this.updateCount(count);
                                 }
                             }
-                        } catch(_) {}
+                            if (data.type === 'welcome') {
+                                console.log('👋 Server welcome:', data.message);
+                            }
+                        } catch(err) {
+                            console.error('WS parse error:', err);
+                        }
                     };
+                    
                     this.ws.onclose = () => {
                         console.log('👥 WS disconnected');
                         this.connected = false;
                         this.setStatus('disconnected');
                         this.reconnect();
                     };
-                    this.ws.onerror = () => {
+                    
+                    this.ws.onerror = (err) => {
+                        console.error('👥 WS error:', err);
                         this.connected = false;
                         this.setStatus('disconnected');
                     };
                 } catch(e) {
-                    console.error('WS error:', e);
+                    console.error('👥 WS connection error:', e);
                     this.reconnect();
                 }
             },
             
             subscribe(channel) {
+                if (!channel) return;
+                
+                // Get channel ID
                 this.channelId = typeof channel === 'string' ? 
                     channel.toLowerCase().replace(/[^a-z0-9]/g, '_') : 
-                    channel.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    (channel.name || 'unknown').toLowerCase().replace(/[^a-z0-9]/g, '_');
+                
+                console.log(`📡 Subscribing to channel: ${this.channelId}`);
+                
                 if (this.connected && this.ws?.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify({
+                    const msg = {
                         type: 'subscribe',
                         channel: channel.name || channel,
                         channelId: this.channelId
-                    }));
+                    };
+                    this.ws.send(JSON.stringify(msg));
+                    console.log('📤 Sent subscribe:', msg);
+                } else {
+                    console.log('⏳ Not connected, will subscribe when connected');
                 }
             },
             
@@ -1810,23 +1928,33 @@
                 this.viewers = count;
                 const el = document.getElementById('viewerCount');
                 const display = count > 1000 ? (count / 1000).toFixed(1) + 'k' : count.toString();
+                
                 if (el.textContent !== display) {
                     el.textContent = display;
+                    // Animate
                     el.classList.remove('animate');
                     void el.offsetWidth;
                     el.classList.add('animate');
+                    console.log(`👥 Viewers updated: ${display}`);
                 }
             },
             
             setStatus(status) {
                 const dot = document.getElementById('viewerStatusDot');
                 dot.className = 'status-dot ' + status;
+                console.log(`👥 Status: ${status}`);
             },
             
             reconnect() {
-                if (this.reconnectAttempts >= this.maxAttempts) return;
+                if (this.reconnectAttempts >= this.maxAttempts) {
+                    console.log('👥 Max reconnection attempts reached');
+                    this.setStatus('disconnected');
+                    return;
+                }
                 this.reconnectAttempts++;
-                setTimeout(() => this.connect(), 3000 * Math.pow(1.5, this.reconnectAttempts - 1));
+                const delay = 3000 * Math.pow(1.5, this.reconnectAttempts - 1);
+                console.log(`👥 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxAttempts})`);
+                setTimeout(() => this.connect(), delay);
             },
             
             onChannelChange(channel) {
@@ -1954,6 +2082,7 @@
             state.currentIndex = idx;
             MultiDigit.clear();
             
+            // Update viewer counter
             ViewerCounter.onChannelChange(ch);
             
             video.pause();
@@ -2050,7 +2179,7 @@
         }
 
         // ============================================================
-        // SHOW APP - FIXED
+        // SHOW APP
         // ============================================================
         function showApp() {
             const loading = document.getElementById('loadingScreen');
@@ -2069,7 +2198,7 @@
         }
 
         // ============================================================
-        // PLAYLIST LOADING - FIXED
+        // PLAYLIST LOADING
         // ============================================================
         async function loadPlaylist() {
             try {
@@ -2082,7 +2211,6 @@
             } catch(e) {
                 console.error('❌ Playlist error:', e);
                 showError(`Failed to load playlist: ${e.message}`);
-                // Load demo channels after showing error
                 setTimeout(() => {
                     console.log('📺 Loading demo channels as fallback...');
                     loadDemo();
@@ -2276,7 +2404,7 @@
         }
 
         // ============================================================
-        // INIT - FIXED
+        // INIT
         // ============================================================
         function init() {
             console.log('🚀 Initializing RUBIS TV 2026...');
@@ -2296,13 +2424,13 @@
             setupKeyboard();
             setupEvents();
             
-            // Load playlist - this will call showApp() when done
+            // Load playlist
             loadPlaylist();
             
             // Initialize viewer counter after app loads
             setTimeout(() => {
                 ViewerCounter.init();
-            }, 2000);
+            }, 1500);
             
             // Auto-hide info panel
             setTimeout(() => {
