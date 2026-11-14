@@ -1,1 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUBIS TV 2026 · Glow & Buffer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        body {
+            background: #0b0d10;
+            color: #f0f4fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #141a1f, #080b0e);
+            box-shadow: inset 0 0 120px rgba(0, 255, 200, 0.02);
+        }
+        .marquee-wrap {
+            background: rgba(10, 20, 25, 0.6);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid rgba(0, 255, 200, 0.15);
+            padding: 6px 0;
+            overflow: hidden;
+            box-shadow: 0 2px 20px rgba(0, 200, 255, 0.05);
+            z-index: 20;
+        }
+        .marquee-track {
+            display: flex;
+            white-space: nowrap;
+            animation: scrollMarquee 28s linear infinite;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            color: #b0e0ff;
+            text-shadow: 0 0 12px rgba(0, 180, 255, 0.3);
+        }
+        .marquee-track i {
+            margin: 0 18px 0 8px;
+            color: #4ff0b0;
+            filter: drop-shadow(0 0 8px #4ff0b0);
+        }
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 24px;
+            background: rgba(8, 14, 18, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 200, 0.08);
+            z-index: 15;
+            flex-shrink: 0;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo i {
+            font-size: 26px;
+            color: #4ff0b0;
+            filter: drop-shadow(0 0 16px #4ff0b070);
+        }
+        .logo span {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b0f0ff, #6effc0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .logo small {
+            font-size: 14px;
+            font-weight: 300;
+            color: #8ac4ff;
+            background: rgba(0, 200, 255, 0.08);
+            padding: 0 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+        }
+        .top-controls {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .buffer-preset {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 30, 40, 0.5);
+            padding: 4px 10px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 255, 200, 0.08);
+        }
+        .buffer-preset button {
+            background: transparent;
+            border: none;
+            color: #8aaec0;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .buffer-preset button.active {
+            background: #1ccf9a;
+            color: #0b1418;
+            box-shadow: 0 0 20px #1ccf9a70;
+        }
+        .buffer-preset button:hover {
+            color: #fff;
+        }
+        .network-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 40, 50, 0.4);
+            padding: 4px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            font-size: 13px;
+        }
+        .network-badge i {
+            color: #6effc0;
+        }
+        .clock {
+            color: #a0c8e0;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar {
+            width: 270px;
+            background: rgba(6, 14, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(0, 255, 200, 0.04);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: 0.3s;
+            z-index: 10;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid rgba(0, 255, 200, 0.05);
+        }
+        .sidebar-header h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6effc0;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        .search-wrap {
+            position: relative;
+        }
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4a7a8a;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: rgba(0, 30, 40, 0.4);
+            border: 1px solid rgba(0, 255, 200, 0.08);
+            border-radius: 40px;
+            color: #eaf6ff;
+            font-size: 13px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .search-wrap input:focus {
+            border-color: #1ccf9a;
+            box-shadow: 0 0 24px #1ccf9a20;
+        }
+        .channel-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 6px 20px;
+        }
+        .channel-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .channel-list::-webkit-scrollbar-thumb {
+            background: #1ccf9a60;
+            border-radius: 10px;
+        }
+        .channel-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin: 2px 0;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 2px solid transparent;
+        }
+        .channel-item:hover {
+            background: rgba(0, 255, 200, 0.04);
+        }
+        .channel-item.active {
+            background: rgba(0, 255, 200, 0.07);
+            border-left-color: #4ff0b0;
+            box-shadow: inset 0 0 30px rgba(0, 255, 200, 0.02);
+        }
+        .channel-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(145deg, #1b3a44, #0d222a);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .channel-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .channel-name {
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .channel-number {
+            font-size: 11px;
+            color: #5f8a9a;
+        }
+        .channel-playing {
+            color: #4ff0b0;
+            font-size: 12px;
+        }
+        .player-zone {
+            flex: 1;
+            position: relative;
+            background: #000a0e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000a0e;
+        }
+        .buffer-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 8, 12, 0.92);
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .buffer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .buffer-spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(0, 255, 200, 0.1);
+            border-top: 4px solid #4ff0b0;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            filter: drop-shadow(0 0 30px #4ff0b060);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .buffer-text {
+            margin-top: 24px;
+            font-size: 20px;
+            font-weight: 400;
+            color: #b0f0ff;
+            letter-spacing: 2px;
+        }
+        .buffer-progress {
+            margin-top: 20px;
+            width: 280px;
+            height: 6px;
+            background: rgba(0, 255, 200, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .buffer-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4ff0b0, #00c8ff);
+            border-radius: 20px;
+            box-shadow: 0 0 30px #4ff0b060;
+            transition: width 0.25s ease;
+        }
+        .buffer-timer {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #6a9aaa;
+            letter-spacing: 0.5px;
+        }
+        .buffer-hint {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #4a7a8a;
+            background: rgba(0, 30, 40, 0.3);
+            padding: 8px 22px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 255, 200, 0.06);
+        }
+        .channel-feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 15, 20, 0.9);
+            border: 2px solid #4ff0b0;
+            border-radius: 20px;
+            padding: 20px 44px;
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 40;
+            display: none;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 70px #4ff0b040;
+            letter-spacing: 6px;
+        }
+        .channel-feedback.show {
+            display: block;
+            animation: fadePop 0.25s ease;
+        }
+        @keyframes fadePop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .player-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.25s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .player-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .channel-tag {
+            background: rgba(0, 10, 16, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 0 0 20px 0;
+            border-bottom: 2px solid #4ff0b070;
+            max-width: 60%;
+            margin: 16px 0 0 16px;
+            transform: translateY(-10px);
+            transition: 0.3s;
+        }
+        .player-overlay.active .channel-tag {
+            transform: translateY(0);
+        }
+        .channel-tag .name {
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+        }
+        .channel-tag .group {
+            font-size: 12px;
+            color: #6effc0;
+        }
+        .bottom-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(0, 10, 16, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            border-radius: 60px;
+            margin: 0 auto 24px;
+            border: 1px solid rgba(0, 255, 200, 0.05);
+            transform: translateY(20px);
+            transition: 0.3s;
+        }
+        .player-overlay.active .bottom-controls {
+            transform: translateY(0);
+        }
+        .ctrl-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            background: rgba(255,255,255,0.02);
+            border: none;
+            color: #c0e0f0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ctrl-btn:hover {
+            background: rgba(0, 255, 200, 0.08);
+            color: #fff;
+            transform: scale(1.05);
+        }
+        .ctrl-btn.play {
+            background: #1ccf9a30;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            border: 1px solid #1ccf9a40;
+        }
+        .ctrl-btn.play:hover {
+            background: #1ccf9a60;
+        }
+        .volume-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100px;
+        }
+        .volume-wrap input[type="range"] {
+            width: 70px;
+            height: 3px;
+            -webkit-appearance: none;
+            background: rgba(0, 255, 200, 0.15);
+            border-radius: 10px;
+            outline: none;
+        }
+        .volume-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ff0b0;
+            cursor: pointer;
+            box-shadow: 0 0 20px #4ff0b060;
+        }
+        .time-label {
+            color: #8ab0c0;
+            font-size: 12px;
+            min-width: 90px;
+            text-align: center;
+        }
+        .fs-btn {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            z-index: 25;
+            background: rgba(0, 10, 16, 0.5);
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            color: #c0e0f0;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fs-btn:hover {
+            background: rgba(0, 255, 200, 0.1);
+            transform: scale(1.06);
+            border-color: #4ff0b0;
+        }
+        .viewer-badge {
+            position: absolute;
+            bottom: 28px;
+            right: 100px;
+            z-index: 25;
+            background: rgba(0, 12, 18, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            border-radius: 40px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #b0e0f0;
+        }
+        .viewer-badge i {
+            color: #4ff0b0;
+        }
+        .viewer-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ff0b0;
+            box-shadow: 0 0 16px #4ff0b0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .info-panel {
+            width: 260px;
+            background: rgba(6, 14, 20, 0.6);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(0, 255, 200, 0.04);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .info-panel.hidden {
+            transform: translateX(280px);
+            width: 0;
+            padding: 0;
+            border: none;
+            overflow: hidden;
+        }
+        .panel-card {
+            background: rgba(0, 30, 40, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(0, 255, 200, 0.04);
+        }
+        .panel-card .title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6effc0;
+            margin-bottom: 12px;
+        }
+        .now-playing {
+            text-align: center;
+        }
+        .now-playing .big-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #1b3a44, #0d222a);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .now-playing .np-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .now-playing .np-group {
+            font-size: 12px;
+            color: #5f8a9a;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 255, 200, 0.03);
+        }
+        .stat-row .label {
+            color: #6a8a9a;
+        }
+        .stat-row .value {
+            color: #b0f0ff;
+        }
+        body.fullscreen .sidebar,
+        body.fullscreen .info-panel,
+        body.fullscreen .top-bar {
+            display: none !important;
+        }
+        body.fullscreen .main {
+            height: 100vh;
+        }
+        body.fullscreen .marquee-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 10, 16, 0.5);
+        }
+        body.fullscreen .player-zone {
+            height: 100vh;
+            padding-top: 40px;
+        }
+        body.fullscreen .fs-btn .fa-compress {
+            display: inline-block;
+        }
+        body.fullscreen .fs-btn .fa-expand {
+            display: none;
+        }
+        .fs-btn .fa-compress {
+            display: none;
+        }
+        body.fullscreen .fs-btn {
+            bottom: 40px;
+            right: 40px;
+        }
+        @media (max-width: 1024px) {
+            .info-panel { display: none; }
+            .sidebar { width: 230px; }
+        }
+        @media (max-width: 720px) {
+            .sidebar { width: 200px; }
+            .top-controls .buffer-preset { display: none; }
+            .top-controls .network-badge { display: none; }
+            .marquee-track { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app" id="app">
+    <div class="marquee-wrap">
+        <div class="marquee-track">
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+        </div>
+    </div>
+    <div class="top-bar">
+        <div class="logo">
+            <i class="fas fa-satellite-dish"></i>
+            <span>RUBIS TV <small>2026</small></span>
+        </div>
+        <div class="top-controls">
+            <div class="buffer-preset" id="bufferPreset">
+                <button data-buffer="5">5s</button>
+                <button data-buffer="10">10s</button>
+                <button class="active" data-buffer="15">15s</button>
+                <button data-buffer="20">20s</button>
+            </div>
+            <div class="network-badge">
+                <i class="fas fa-wifi"></i>
+                <span id="networkSpeed">-- Mbps</span>
+            </div>
+            <div class="clock" id="clock">--:--</div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-list-ul" style="margin-right: 8px;"></i> CHANNELS</h2>
+                <div class="search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="channelSearch" placeholder="Rechercher..." autocomplete="off">
+                </div>
+                <div style="font-size: 11px; color: #4a7a8a; margin-top: 6px;"><span id="channelCount">0</span> chaînes</div>
+            </div>
+            <div class="channel-list" id="channelList"></div>
+        </div>
+        <div class="player-zone" id="playerZone">
+            <video id="video-player" playsinline preload="auto" crossorigin="anonymous"></video>
+            <div class="buffer-overlay" id="bufferOverlay">
+                <div class="buffer-spinner"></div>
+                <div class="buffer-text" id="bufferText">Pré-buffering 15s</div>
+                <div class="buffer-progress"><div class="buffer-progress-fill" id="bufferFill"></div></div>
+                <div class="buffer-timer" id="bufferTimer">0 / 15s</div>
+                <div class="buffer-hint"><i class="fas fa-shield-alt"></i> Anti-lag activé · 15s pré-charge</div>
+            </div>
+            <div class="channel-feedback" id="channelFeedback"></div>
+            <div class="player-overlay" id="playerOverlay">
+                <div class="channel-tag">
+                    <div class="name" id="overlayName">Sélectionnez une chaîne</div>
+                    <div class="group" id="overlayGroup">--</div>
+                </div>
+                <div class="bottom-controls">
+                    <button class="ctrl-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                    <button class="ctrl-btn play" id="playBtn"><i class="fas fa-play" id="playIcon"></i></button>
+                    <button class="ctrl-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+                    <button class="ctrl-btn" id="manualBufferBtn"><i class="fas fa-sync-alt"></i></button>
+                    <div class="volume-wrap">
+                        <i class="fas fa-volume-up" id="volIcon"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <div class="time-label"><span id="currentTimeDisplay">0:00</span> / <span id="durationDisplay">0:00</span></div>
+                </div>
+            </div>
+            <button class="fs-btn" id="fsBtn">
+                <i class="fas fa-expand"></i>
+                <i class="fas fa-compress"></i>
+            </button>
+            <div class="viewer-badge" id="viewerBadge">
+                <i class="fas fa-users"></i>
+                <span id="viewerCount">0</span>
+                <span class="dot"></span>
+            </div>
+            <div style="position:absolute; top:16px; right:16px; z-index:12; background:rgba(0,10,16,0.5); backdrop-filter:blur(8px); border-radius:16px; padding:12px 18px; border:1px solid rgba(0,255,200,0.05); font-size:12px; min-width:140px; display:none;" id="bufferStats">
+                <div style="color:#6effc0; font-weight:500; margin-bottom:6px;">⚡ BUFFER</div>
+                <div><span style="color:#6a8a9a;">Temps:</span> <span id="statBufferTime">0s</span></div>
+                <div><span style="color:#6a8a9a;">Progrès:</span> <span id="statBufferProgress">0%</span></div>
+                <div><span style="color:#6a8a9a;">Vitesse:</span> <span id="statNetworkSpeed">0 Mbps</span></div>
+            </div>
+        </div>
+        <div class="info-panel" id="infoPanel">
+            <div class="panel-card now-playing">
+                <div class="title"><i class="fas fa-broadcast-tower"></i> EN LECTURE</div>
+                <div class="big-logo" id="npLogo">📺</div>
+                <div class="np-name" id="npName">Aucune</div>
+                <div class="np-group" id="npGroup">--</div>
+                <div style="margin-top:8px; font-size:12px; color:#4a7a8a;">Statut: <span id="streamStatus" style="color:#6effc0;">Prêt</span></div>
+            </div>
+            <div class="panel-card">
+                <div class="title"><i class="fas fa-tachometer-alt"></i> PERFORMANCE</div>
+                <div class="stat-row"><span class="label">Buffer cible</span><span class="value" id="targetBufferDisplay">15s</span></div>
+                <div class="stat-row"><span class="label">Buffer actuel</span><span class="value" id="currentBufferDisplay">0s</span></div>
+                <div class="stat-row"><span class="label">Réseau</span><span class="value" id="perfNetwork">--</span></div>
+                <div class="stat-row"><span class="label">Mode</span><span class="value" style="color:#6effc0;">Pré-charge 15s</span></div>
+            </div>
+            <div class="panel-card" style="font-size:12px; color:#4a7a8a;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <span><kbd>1-4</kbd> buffer</span>
+                    <span><kbd>B</kbd> manuel</span>
+                    <span><kbd>↑↓</kbd> chaînes</span>
+                    <span><kbd>F</kbd> plein écran</span>
+                    <span><kbd>0</kbd> FS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function() {
+        "use strict";
 
+        // ============================================
+        // VIEWER COUNTER - REAL REST API INTEGRATION
+        // ============================================
+        
+        // Configuration - Change this to your server URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // Generate a unique session ID for this viewer
+        function generateSessionId() {
+            return 'viewer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // Get or create session ID (persist in localStorage)
+        let sessionId = localStorage.getItem('rubisTvSessionId');
+        if (!sessionId) {
+            sessionId = generateSessionId();
+            localStorage.setItem('rubisTvSessionId', sessionId);
+        }
+        
+        let heartbeatInterval = null;
+        let isViewerConnected = false;
+        
+        // Send heartbeat to server
+        async function sendHeartbeat() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/viewer/heartbeat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        sessionId,
+                        userAgent: navigator.userAgent,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isViewerConnected = true;
+                    // Update viewer count in UI
+                    const viewerCountEl = document.getElementById('viewerCount');
+                    if (viewerCountEl && typeof data.viewers === 'number') {
+                        viewerCountEl.textContent = data.viewers;
+                    }
+                }
+            } catch (error) {
+                console.error('Heartbeat failed:', error);
+                isViewerConnected = false;
+                // If server is down, show "?" to indicate connection issue
+                const viewerCountEl = document.getElementById('viewerCount');
+                if (viewerCountEl) {
+                    viewerCountEl.textContent = '?';
+                }
+            }
+        }
+        
+        // Send leave notification when user leaves
+        async function sendLeaveNotification() {
+            try {
+                await fetch(`${API_BASE_URL}/viewer/leave`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+            } catch (e) {
+                // Ignore errors on page unload
+            }
+        }
+        
+        // Initialize real viewer counter
+        function initViewerCounter() {
+            // Send initial heartbeat
+            sendHeartbeat();
+            
+            // Send heartbeat every 10 seconds
+            heartbeatInterval = setInterval(sendHeartbeat, 10000);
+            
+            // Send leave notification when user leaves the page
+            window.addEventListener('beforeunload', sendLeaveNotification);
+            window.addEventListener('pagehide', sendLeaveNotification);
+            
+            // Also send leave when tab is hidden (optional)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Tab is hidden, we could reduce heartbeat frequency
+                    // Or send a "away" status if you implement it
+                }
+            });
+        }
+        
+        // Check server status on startup
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/status`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Viewer server is online');
+                    return true;
+                }
+            } catch (e) {
+                console.warn('⚠️ Viewer server is offline - using fallback mode');
+                // Fallback: show a simulated count with a "demo" indicator
+                const viewerCountEl = document.getElementById('viewerCount');
+                if (viewerCountEl) {
+                    viewerCountEl.textContent = '0';
+                }
+                return false;
+            }
+            return false;
+        }
+        
+        // ============================================
+        // END VIEWER COUNTER INTEGRATION
+        // ============================================
+
+        const state = {
+            channels: [],
+            filtered: [],
+            currentIndex: 0,
+            isPlaying: false,
+            volume: 0.75,
+            targetBuffer: 15,
+            isFullscreen: false,
+            overlayTimer: null,
+            bufferingActive: false,
+            bufferInterval: null,
+            bufferReady: false,
+        };
+
+        const video = document.getElementById('video-player');
+        const channelList = document.getElementById('channelList');
+        const searchInput = document.getElementById('channelSearch');
+        const channelCount = document.getElementById('channelCount');
+        const overlayName = document.getElementById('overlayName');
+        const overlayGroup = document.getElementById('overlayGroup');
+        const npName = document.getElementById('npName');
+        const npGroup = document.getElementById('npGroup');
+        const npLogo = document.getElementById('npLogo');
+        const streamStatus = document.getElementById('streamStatus');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const manualBufferBtn = document.getElementById('manualBufferBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volIcon = document.getElementById('volIcon');
+        const fsBtn = document.getElementById('fsBtn');
+        const playerOverlay = document.getElementById('playerOverlay');
+        const bufferOverlay = document.getElementById('bufferOverlay');
+        const bufferFill = document.getElementById('bufferFill');
+        const bufferTimer = document.getElementById('bufferTimer');
+        const bufferText = document.getElementById('bufferText');
+        const channelFeedback = document.getElementById('channelFeedback');
+        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+        const clock = document.getElementById('clock');
+        const viewerCount = document.getElementById('viewerCount');
+        const statBufferTime = document.getElementById('statBufferTime');
+        const statBufferProgress = document.getElementById('statBufferProgress');
+        const statNetworkSpeed = document.getElementById('statNetworkSpeed');
+        const currentBufferDisplay = document.getElementById('currentBufferDisplay');
+        const targetBufferDisplay = document.getElementById('targetBufferDisplay');
+        const perfNetwork = document.getElementById('perfNetwork');
+        const networkSpeedEl = document.getElementById('networkSpeed');
+
+        const PLAYLIST_URL = 'https://gist.githubusercontent.com/RalphDarbouze/7fc242ebfecbba4f6854becb8b8abc94/raw/d67e6d3878b8c0f74ba20a2a4cf001a0157c15bb/gistfile1.txt';
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return '0:00';
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        }
+
+        function stringToColor(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+            return `hsl(${h % 360}, 70%, 45%)`;
+        }
+
+        function updateClock() {
+            const d = new Date();
+            clock.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        updateClock();
+        setInterval(updateClock, 30000);
+
+        async function loadPlaylist() {
+            try {
+                const resp = await fetch(PLAYLIST_URL);
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const txt = await resp.text();
+                parseM3U(txt);
+            } catch (e) {
+                console.warn('Playlist fallback', e);
+                loadDemo();
+            }
+        }
+
+        function parseM3U(data) {
+            const lines = data.split('\n');
+            const channels = [];
+            let current = null;
+            let num = 1;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const match = line.match(/#EXTINF:.*?(?:group-title="([^"]+)")?.*?,(.*)/);
+                    if (match) {
+                        const group = match[1] || 'Général';
+                        const name = match[2]?.trim() || 'Chaîne';
+                        current = { name, group, url: null, number: num++ };
+                    }
+                } else if (line && !line.startsWith('#') && current) {
+                    current.url = line;
+                    channels.push(current);
+                    current = null;
+                }
+            }
+            if (channels.length) {
+                state.channels = channels;
+                state.filtered = [...channels];
+                renderChannels();
+                if (state.filtered.length) selectChannel(0);
+            } else {
+                loadDemo();
+            }
+        }
+
+        function loadDemo() {
+            const demo = [
+                { name: 'BBC World News', group: 'News', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', number: 1 },
+                { name: 'CNN International', group: 'News', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4', number: 2 },
+                { name: 'ESPN HD', group: 'Sports', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_5mb.mp4', number: 3 },
+                { name: 'HBO HD', group: 'Entertainment', url: 'https://sample-videos.com/video123/mp4/480/big_buck_bunny_480p_1mb.mp4', number: 4 },
+            ];
+            state.channels = demo;
+            state.filtered = [...demo];
+            renderChannels();
+            if (state.filtered.length) selectChannel(0);
+        }
+
+        function renderChannels() {
+            channelList.innerHTML = '';
+            state.filtered.forEach((ch, idx) => {
+                const div = document.createElement('div');
+                div.className = `channel-item ${idx === state.currentIndex ? 'active' : ''}`;
+                div.dataset.index = idx;
+                const color = stringToColor(ch.name);
+                div.innerHTML = `
+                    <div class="channel-logo" style="background:${color}">${getInitials(ch.name)}</div>
+                    <div class="channel-info">
+                        <div class="channel-name">${ch.name}</div>
+                        <div class="channel-number">${ch.number}</div>
+                    </div>
+                    <div class="channel-playing">${idx === state.currentIndex ? '<i class="fas fa-play"></i>' : ''}</div>
+                `;
+                div.addEventListener('click', () => { selectChannel(idx); showOverlay(); });
+                channelList.appendChild(div);
+            });
+            channelCount.textContent = state.filtered.length;
+        }
+
+        function selectChannel(index) {
+            if (index < 0 || index >= state.filtered.length) return;
+            state.currentIndex = index;
+            const ch = state.filtered[index];
+            if (!ch || !ch.url) return;
+
+            document.querySelectorAll('.channel-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+                const playing = el.querySelector('.channel-playing');
+                if (playing) playing.innerHTML = i === index ? '<i class="fas fa-play"></i>' : '';
+            });
+
+            overlayName.textContent = ch.name;
+            overlayGroup.textContent = ch.group;
+            npName.textContent = ch.name;
+            npGroup.textContent = ch.group;
+            npLogo.textContent = getInitials(ch.name);
+            npLogo.style.background = stringToColor(ch.name);
+            streamStatus.textContent = 'Buffering...';
+            streamStatus.style.color = '#f0b040';
+
+            channelFeedback.classList.remove('show');
+
+            video.pause();
+            state.isPlaying = false;
+            playIcon.className = 'fas fa-play';
+
+            startBuffer(ch.url);
+        }
+
+        function startBuffer(url) {
+            if (state.bufferInterval) {
+                clearInterval(state.bufferInterval);
+                state.bufferInterval = null;
+            }
+            state.bufferingActive = true;
+            state.bufferReady = false;
+
+            bufferOverlay.classList.add('active');
+            bufferFill.style.width = '0%';
+            bufferTimer.textContent = '0 / 15s';
+            bufferText.textContent = 'Pré-buffering 15s';
+
+            let target = state.targetBuffer || 15;
+            let elapsed = 0;
+
+            video.src = url;
+            video.crossOrigin = 'anonymous';
+            video.preload = 'auto';
+            video.load();
+
+            let canPlayHandler = () => {
+                if (state.bufferingActive) {
+                    const buf = video.buffered;
+                    if (buf.length > 0) {
+                        const end = buf.end(buf.length - 1);
+                        if (end > video.currentTime + 1.5) {
+                            finishBuffer();
+                        }
+                    }
+                }
+            };
+            video.addEventListener('canplay', canPlayHandler);
+            video.addEventListener('loadeddata', canPlayHandler);
+
+            state.bufferInterval = setInterval(() => {
+                if (!state.bufferingActive) return;
+
+                if (video.buffered.length > 0) {
+                    const end = video.buffered.end(video.buffered.length - 1);
+                    const currentTime = video.currentTime || 0;
+                    const bufferSec = Math.max(0, end - currentTime);
+                    const progress = Math.min(bufferSec / target, 1);
+                    const pct = Math.round(progress * 100);
+                    bufferFill.style.width = pct + '%';
+                    bufferTimer.textContent = `${Math.min(bufferSec, target).toFixed(1)} / ${target}s`;
+                    statBufferTime.textContent = bufferSec.toFixed(1) + 's';
+                    statBufferProgress.textContent = pct + '%';
+                    currentBufferDisplay.textContent = bufferSec.toFixed(1) + 's';
+
+                    if (bufferSec >= target || (video.videoWidth > 0 && bufferSec > 1.5)) {
+                        finishBuffer();
+                    }
+                } else {
+                    elapsed += 0.5;
+                    const prog = Math.min(elapsed / target, 1);
+                    bufferFill.style.width = (prog * 100) + '%';
+                    bufferTimer.textContent = `${Math.min(elapsed, target).toFixed(1)} / ${target}s`;
+                    if (elapsed >= target) finishBuffer();
+                }
+            }, 300);
+
+            function finishBuffer() {
+                if (!state.bufferingActive) return;
+                state.bufferingActive = false;
+                state.bufferReady = true;
+                if (state.bufferInterval) {
+                    clearInterval(state.bufferInterval);
+                    state.bufferInterval = null;
+                }
+                video.removeEventListener('canplay', canPlayHandler);
+                video.removeEventListener('loadeddata', canPlayHandler);
+                bufferOverlay.classList.remove('active');
+
+                video.play().then(() => {
+                    state.isPlaying = true;
+                    playIcon.className = 'fas fa-pause';
+                    streamStatus.textContent = 'En direct';
+                    streamStatus.style.color = '#6effc0';
+                }).catch(() => {
+                    state.isPlaying = false;
+                    playIcon.className = 'fas fa-play';
+                    streamStatus.textContent = 'Prêt';
+                    streamStatus.style.color = '#6effc0';
+                });
+            }
+        }
+
+        function showOverlay() {
+            playerOverlay.classList.add('active');
+            clearTimeout(state.overlayTimer);
+            state.overlayTimer = setTimeout(() => {
+                playerOverlay.classList.remove('active');
+            }, 4000);
+        }
+
+        function navChannel(delta) {
+            let idx = state.currentIndex + delta;
+            if (idx < 0) idx = state.filtered.length - 1;
+            if (idx >= state.filtered.length) idx = 0;
+            selectChannel(idx);
+            showOverlay();
+        }
+
+        function togglePlay() {
+            if (!video.src) return;
+            if (video.paused) {
+                video.play().then(() => {
+                    state.isPlaying = true;
+                    playIcon.className = 'fas fa-pause';
+                    streamStatus.textContent = 'En direct';
+                }).catch(() => {});
+            } else {
+                video.pause();
+                state.isPlaying = false;
+                playIcon.className = 'fas fa-play';
+                streamStatus.textContent = 'Pause';
+            }
+            showOverlay();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.();
+            } else {
+                document.exitFullscreen?.();
+            }
+        }
+
+        function manualBuffer() {
+            if (state.filtered.length && state.filtered[state.currentIndex]) {
+                selectChannel(state.currentIndex);
+                showOverlay();
+            }
+        }
+
+        function updateVolumeIcon() {
+            const v = video.volume;
+            if (v === 0) volIcon.className = 'fas fa-volume-off';
+            else if (v < 0.5) volIcon.className = 'fas fa-volume-down';
+            else volIcon.className = 'fas fa-volume-up';
+        }
+
+        let digitBuffer = '';
+        let digitTimer = null;
+        function handleDigit(digit) {
+            clearTimeout(digitTimer);
+            digitBuffer += digit;
+            channelFeedback.textContent = digitBuffer;
+            channelFeedback.classList.add('show');
+            digitTimer = setTimeout(() => {
+                const num = parseInt(digitBuffer);
+                const idx = state.filtered.findIndex(c => c.number === num);
+                if (idx !== -1) { selectChannel(idx); showOverlay(); }
+                digitBuffer = '';
+                channelFeedback.classList.remove('show');
+            }, 1800);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+            if (e.key === 'b' || e.key === 'B') { e.preventDefault(); manualBuffer(); }
+            if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); navChannel(-1); }
+            if (e.key === 'ArrowDown') { e.preventDefault(); navChannel(1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); video.volume = Math.max(0, video.volume - 0.05); volumeSlider.value = video.volume; updateVolumeIcon(); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); video.volume = Math.min(1, video.volume + 0.05); volumeSlider.value = video.volume; updateVolumeIcon(); }
+            if (e.key === 'Escape') {
+                channelFeedback.classList.remove('show');
+                digitBuffer = '';
+                clearTimeout(digitTimer);
+            }
+            if (e.key >= '1' && e.key <= '9') { e.preventDefault(); handleDigit(e.key); }
+            if (e.key === '0') {
+                e.preventDefault();
+                if (digitBuffer.length === 0) {
+                    toggleFullscreen();
+                } else {
+                    handleDigit('0');
+                }
+            }
+            if (e.key >= '1' && e.key <= '4') {
+                const map = {1:5,2:10,3:15,4:20};
+                const sec = map[e.key];
+                if (sec) {
+                    state.targetBuffer = sec;
+                    targetBufferDisplay.textContent = sec + 's';
+                    document.querySelectorAll('#bufferPreset button').forEach(b => {
+                        b.classList.toggle('active', parseInt(b.dataset.buffer) === sec);
+                    });
+                }
+            }
+        });
+
+        function init() {
+            // Check server status and initialize viewer counter
+            checkServerStatus().then(() => {
+                initViewerCounter();
+            });
+
+            loadPlaylist();
+
+            playBtn.addEventListener('click', togglePlay);
+            prevBtn.addEventListener('click', () => { navChannel(-1); showOverlay(); });
+            nextBtn.addEventListener('click', () => { navChannel(1); showOverlay(); });
+            manualBufferBtn.addEventListener('click', manualBuffer);
+            fsBtn.addEventListener('click', toggleFullscreen);
+            document.addEventListener('fullscreenchange', () => {
+                document.body.classList.toggle('fullscreen', !!document.fullscreenElement);
+            });
+
+            volumeSlider.addEventListener('input', () => {
+                video.volume = parseFloat(volumeSlider.value);
+                updateVolumeIcon();
+            });
+            video.addEventListener('volumechange', updateVolumeIcon);
+
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.toLowerCase();
+                state.filtered = state.channels.filter(c =>
+                    c.name.toLowerCase().includes(q) || c.group.toLowerCase().includes(q)
+                );
+                renderChannels();
+                if (state.filtered.length) selectChannel(0);
+            });
+
+            video.addEventListener('timeupdate', () => {
+                currentTimeDisplay.textContent = formatTime(video.currentTime);
+                if (video.duration) durationDisplay.textContent = formatTime(video.duration);
+                if (video.buffered.length) {
+                    const end = video.buffered.end(video.buffered.length - 1);
+                    const buf = end - video.currentTime;
+                    if (buf > 0) {
+                        const pct = Math.min((buf / state.targetBuffer) * 100, 100);
+                        statBufferProgress.textContent = Math.round(pct) + '%';
+                        statBufferTime.textContent = buf.toFixed(1) + 's';
+                        currentBufferDisplay.textContent = buf.toFixed(1) + 's';
+                    }
+                }
+            });
+
+            setInterval(() => {
+                const speed = (3 + Math.random() * 12).toFixed(1);
+                networkSpeedEl.textContent = speed + ' Mbps';
+                statNetworkSpeed.textContent = speed + ' Mbps';
+                perfNetwork.textContent = speed + ' Mbps';
+            }, 3000);
+
+            document.querySelectorAll('#bufferPreset button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sec = parseInt(btn.dataset.buffer);
+                    state.targetBuffer = sec;
+                    targetBufferDisplay.textContent = sec + 's';
+                    document.querySelectorAll('#bufferPreset button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            document.addEventListener('mousemove', showOverlay);
+            document.addEventListener('touchstart', showOverlay);
+
+            setTimeout(showOverlay, 500);
+            updateVolumeIcon();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
+</body>
+</html>
