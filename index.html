@@ -651,9 +651,11 @@
 <div class="app" id="app">
     <div class="marquee-wrap">
         <div class="marquee-track">
-            
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie ECOLE DES RUBIS <i class="fas fa-heart"></i>
-            
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
         </div>
     </div>
     <div class="top-bar">
@@ -1263,16 +1265,37 @@
             }
         });
 
-        // === TV REMOTE CHANNEL +/- (ONLY ADDITION) ===
-        // This logs EVERY key to the console so we can identify your remote's
-        // channel buttons. Open DevTools (F12) → Console, press CH+ / CH- on
-        // your remote, and read the "REMOTE KEY:" lines.
-        document.addEventListener('keydown', (e) => {
-            console.log('REMOTE KEY:', JSON.stringify({
-                key: e.key, code: e.code, keyCode: e.keyCode, which: e.which
-            }));
-        });
-        // === END TV REMOTE CHANNEL +/- ===
+        // === ON-SCREEN REMOTE KEY DEBUG (OPTION B) ===
+        // Shows a box for 3 seconds with the key name/code/keyCode of every
+        // remote button pressed. Press CH+ and CH- on your remote and read
+        // what appears on screen.
+        (function () {
+            const dbg = document.createElement('div');
+            dbg.id = 'remoteDebugBox';
+            dbg.style.cssText = [
+                'position:fixed', 'top:20px', 'left:50%', 'transform:translateX(-50%)',
+                'background:rgba(0,0,0,0.92)', 'color:#4ff0b0', 'padding:14px 22px',
+                'border-radius:14px', 'border:2px solid #4ff0b0', 'font-size:16px',
+                'font-weight:600', 'z-index:99999', 'display:none', 'white-space:pre',
+                'box-shadow:0 0 40px #4ff0b080', 'font-family:monospace',
+                'line-height:1.6', 'text-align:center', 'pointer-events:none'
+            ].join(';');
+            document.body.appendChild(dbg);
+
+            let hideTimer = null;
+            document.addEventListener('keydown', (e) => {
+                dbg.textContent =
+                    'KEY: ' + e.key + '\n' +
+                    'CODE: ' + e.code + '\n' +
+                    'keyCode: ' + e.keyCode;
+                dbg.style.display = 'block';
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => {
+                    dbg.style.display = 'none';
+                }, 3000);
+            });
+        })();
+        // === END ON-SCREEN REMOTE KEY DEBUG ===
 
         function init() {
             // Check server status and initialize viewer counter
