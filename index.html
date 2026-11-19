@@ -1265,6 +1265,34 @@
             }
         });
 
+        // ============================================
+        // TV REMOTE CHANNEL +/- SUPPORT
+        // Handles: ChannelUp / ChannelDown keys, and
+        // the dedicated 'ChannelUp' / 'ChannelDown'
+        // media keys emitted by many TV remotes.
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            // Standard keyboard PageUp / PageDown (often mapped to CH+/- on TV)
+            // and the TV remote specific keys.
+            if (e.key === 'ChannelUp' || e.key === 'PageUp' || e.key === '+' || e.key === 'Add') {
+                e.preventDefault();
+                navChannel(1);          // next channel
+                showOverlay();
+                return;
+            }
+            if (e.key === 'ChannelDown' || e.key === 'PageDown' || e.key === '-' || e.key === 'Subtract') {
+                e.preventDefault();
+                navChannel(-1);         // previous channel
+                showOverlay();
+                return;
+            }
+            // Some remotes send key codes like 'MediaTrackNext' etc. — not used here.
+        });
+
+        // ============================================
+        // END TV REMOTE CHANNEL +/- SUPPORT
+        // ============================================
+
         function init() {
             // Check server status and initialize viewer counter
             checkServerStatus().then(() => {
