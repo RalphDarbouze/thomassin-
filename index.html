@@ -1,3 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUBIS TV 2026 · Glow & Buffer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        body {
+            background: #0b0d10;
+            color: #f0f4fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #141a1f, #080b0e);
+            box-shadow: inset 0 0 120px rgba(0, 255, 200, 0.02);
+        }
+        .marquee-wrap {
+            background: rgba(10, 20, 25, 0.6);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid rgba(0, 255, 200, 0.15);
+            padding: 6px 0;
+            overflow: hidden;
+            box-shadow: 0 2px 20px rgba(0, 200, 255, 0.05);
+            z-index: 20;
+        }
+        .marquee-track {
+            display: flex;
+            white-space: nowrap;
+            animation: scrollMarquee 28s linear infinite;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            color: #b0e0ff;
+            text-shadow: 0 0 12px rgba(0, 180, 255, 0.3);
+        }
+        .marquee-track i {
+            margin: 0 18px 0 8px;
+            color: #4ff0b0;
+            filter: drop-shadow(0 0 8px #4ff0b0);
+        }
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 24px;
+            background: rgba(8, 14, 18, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 200, 0.08);
+            z-index: 15;
+            flex-shrink: 0;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo i {
+            font-size: 26px;
+            color: #4ff0b0;
+            filter: drop-shadow(0 0 16px #4ff0b070);
+        }
+        .logo span {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b0f0ff, #6effc0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .logo small {
+            font-size: 14px;
+            font-weight: 300;
+            color: #8ac4ff;
+            background: rgba(0, 200, 255, 0.08);
+            padding: 0 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+        }
+        .top-controls {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .buffer-preset {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 30, 40, 0.5);
+            padding: 4px 10px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 255, 200, 0.08);
+        }
+        .buffer-preset button {
+            background: transparent;
+            border: none;
+            color: #8aaec0;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .buffer-preset button.active {
+            background: #1ccf9a;
+            color: #0b1418;
+            box-shadow: 0 0 20px #1ccf9a70;
+        }
+        .buffer-preset button:hover {
+            color: #fff;
+        }
+        .network-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 40, 50, 0.4);
+            padding: 4px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            font-size: 13px;
+        }
+        .network-badge i {
+            color: #6effc0;
+        }
+        .clock {
+            color: #a0c8e0;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar {
+            width: 270px;
+            background: rgba(6, 14, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(0, 255, 200, 0.04);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: 0.3s;
+            z-index: 10;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid rgba(0, 255, 200, 0.05);
+        }
+        .sidebar-header h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6effc0;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        .search-wrap {
+            position: relative;
+        }
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4a7a8a;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: rgba(0, 30, 40, 0.4);
+            border: 1px solid rgba(0, 255, 200, 0.08);
+            border-radius: 40px;
+            color: #eaf6ff;
+            font-size: 13px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .search-wrap input:focus {
+            border-color: #1ccf9a;
+            box-shadow: 0 0 24px #1ccf9a20;
+        }
+        .channel-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 6px 20px;
+        }
+        .channel-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .channel-list::-webkit-scrollbar-thumb {
+            background: #1ccf9a60;
+            border-radius: 10px;
+        }
+        .channel-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin: 2px 0;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 2px solid transparent;
+        }
+        .channel-item:hover {
+            background: rgba(0, 255, 200, 0.04);
+        }
+        .channel-item.active {
+            background: rgba(0, 255, 200, 0.07);
+            border-left-color: #4ff0b0;
+            box-shadow: inset 0 0 30px rgba(0, 255, 200, 0.02);
+        }
+        .channel-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(145deg, #1b3a44, #0d222a);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .channel-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .channel-name {
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .channel-number {
+            font-size: 11px;
+            color: #5f8a9a;
+        }
+        .channel-playing {
+            color: #4ff0b0;
+            font-size: 12px;
+        }
+        .player-zone {
+            flex: 1;
+            position: relative;
+            background: #000a0e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000a0e;
+        }
+        .buffer-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 8, 12, 0.92);
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .buffer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .buffer-spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(0, 255, 200, 0.1);
+            border-top: 4px solid #4ff0b0;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            filter: drop-shadow(0 0 30px #4ff0b060);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .buffer-text {
+            margin-top: 24px;
+            font-size: 20px;
+            font-weight: 400;
+            color: #b0f0ff;
+            letter-spacing: 2px;
+        }
+        .buffer-progress {
+            margin-top: 20px;
+            width: 280px;
+            height: 6px;
+            background: rgba(0, 255, 200, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .buffer-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4ff0b0, #00c8ff);
+            border-radius: 20px;
+            box-shadow: 0 0 30px #4ff0b060;
+            transition: width 0.25s ease;
+        }
+        .buffer-timer {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #6a9aaa;
+            letter-spacing: 0.5px;
+        }
+        .buffer-hint {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #4a7a8a;
+            background: rgba(0, 30, 40, 0.3);
+            padding: 8px 22px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 255, 200, 0.06);
+        }
+        .channel-feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 15, 20, 0.9);
+            border: 2px solid #4ff0b0;
+            border-radius: 20px;
+            padding: 20px 44px;
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 40;
+            display: none;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 70px #4ff0b040;
+            letter-spacing: 6px;
+        }
+        .channel-feedback.show {
+            display: block;
+            animation: fadePop 0.25s ease;
+        }
+        @keyframes fadePop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .player-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.25s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .player-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .channel-tag {
+            background: rgba(0, 10, 16, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 0 0 20px 0;
+            border-bottom: 2px solid #4ff0b070;
+            max-width: 60%;
+            margin: 16px 0 0 16px;
+            transform: translateY(-10px);
+            transition: 0.3s;
+        }
+        .player-overlay.active .channel-tag {
+            transform: translateY(0);
+        }
+        .channel-tag .name {
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+        }
+        .channel-tag .group {
+            font-size: 12px;
+            color: #6effc0;
+        }
+        .bottom-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(0, 10, 16, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            border-radius: 60px;
+            margin: 0 auto 24px;
+            border: 1px solid rgba(0, 255, 200, 0.05);
+            transform: translateY(20px);
+            transition: 0.3s;
+        }
+        .player-overlay.active .bottom-controls {
+            transform: translateY(0);
+        }
+        .ctrl-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            background: rgba(255,255,255,0.02);
+            border: none;
+            color: #c0e0f0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ctrl-btn:hover {
+            background: rgba(0, 255, 200, 0.08);
+            color: #fff;
+            transform: scale(1.05);
+        }
+        .ctrl-btn.play {
+            background: #1ccf9a30;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            border: 1px solid #1ccf9a40;
+        }
+        .ctrl-btn.play:hover {
+            background: #1ccf9a60;
+        }
+        .volume-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100px;
+        }
+        .volume-wrap input[type="range"] {
+            width: 70px;
+            height: 3px;
+            -webkit-appearance: none;
+            background: rgba(0, 255, 200, 0.15);
+            border-radius: 10px;
+            outline: none;
+        }
+        .volume-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ff0b0;
+            cursor: pointer;
+            box-shadow: 0 0 20px #4ff0b060;
+        }
+        .time-label {
+            color: #8ab0c0;
+            font-size: 12px;
+            min-width: 90px;
+            text-align: center;
+        }
+        .fs-btn {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            z-index: 25;
+            background: rgba(0, 10, 16, 0.5);
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            color: #c0e0f0;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fs-btn:hover {
+            background: rgba(0, 255, 200, 0.1);
+            transform: scale(1.06);
+            border-color: #4ff0b0;
+        }
+        .viewer-badge {
+            position: absolute;
+            bottom: 28px;
+            right: 100px;
+            z-index: 25;
+            background: rgba(0, 12, 18, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 200, 0.1);
+            border-radius: 40px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #b0e0f0;
+        }
+        .viewer-badge i {
+            color: #4ff0b0;
+        }
+        .viewer-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ff0b0;
+            box-shadow: 0 0 16px #4ff0b0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .info-panel {
+            width: 260px;
+            background: rgba(6, 14, 20, 0.6);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(0, 255, 200, 0.04);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .info-panel.hidden {
+            transform: translateX(280px);
+            width: 0;
+            padding: 0;
+            border: none;
+            overflow: hidden;
+        }
+        .panel-card {
+            background: rgba(0, 30, 40, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(0, 255, 200, 0.04);
+        }
+        .panel-card .title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6effc0;
+            margin-bottom: 12px;
+        }
+        .now-playing {
+            text-align: center;
+        }
+        .now-playing .big-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #1b3a44, #0d222a);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .now-playing .np-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .now-playing .np-group {
+            font-size: 12px;
+            color: #5f8a9a;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 255, 200, 0.03);
+        }
+        .stat-row .label {
+            color: #6a8a9a;
+        }
+        .stat-row .value {
+            color: #b0f0ff;
+        }
+        body.fullscreen .sidebar,
+        body.fullscreen .info-panel,
+        body.fullscreen .top-bar {
+            display: none !important;
+        }
+        body.fullscreen .main {
+            height: 100vh;
+        }
+        body.fullscreen .marquee-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 10, 16, 0.5);
+        }
+        body.fullscreen .player-zone {
+            height: 100vh;
+            padding-top: 40px;
+        }
+        body.fullscreen .fs-btn .fa-compress {
+            display: inline-block;
+        }
+        body.fullscreen .fs-btn .fa-expand {
+            display: none;
+        }
+        .fs-btn .fa-compress {
+            display: none;
+        }
+        body.fullscreen .fs-btn {
+            bottom: 40px;
+            right: 40px;
+        }
+        @media (max-width: 1024px) {
+            .info-panel { display: none; }
+            .sidebar { width: 230px; }
+        }
+        @media (max-width: 720px) {
+            .sidebar { width: 200px; }
+            .top-controls .buffer-preset { display: none; }
+            .top-controls .network-badge { display: none; }
+            .marquee-track { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app" id="app">
+    <div class="marquee-wrap">
+        <div class="marquee-track">
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+        </div>
+    </div>
+    <div class="top-bar">
+        <div class="logo">
+            <i class="fas fa-satellite-dish"></i>
+            <span>RUBIS TV <small>2026</small></span>
+        </div>
+        <div class="top-controls">
+            <div class="buffer-preset" id="bufferPreset">
+                <button data-buffer="5">5s</button>
+                <button data-buffer="10">10s</button>
+                <button class="active" data-buffer="15">15s</button>
+                <button data-buffer="20">20s</button>
+            </div>
+            <div class="network-badge">
+                <i class="fas fa-wifi"></i>
+                <span id="networkSpeed">-- Mbps</span>
+            </div>
+            <div class="clock" id="clock">--:--</div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-list-ul" style="margin-right: 8px;"></i> CHANNELS</h2>
+                <div class="search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="channelSearch" placeholder="Rechercher..." autocomplete="off">
+                </div>
+                <div style="font-size: 11px; color: #4a7a8a; margin-top: 6px;"><span id="channelCount">0</span> chaînes</div>
+            </div>
+            <div class="channel-list" id="channelList"></div>
+        </div>
+        <div class="player-zone" id="playerZone">
+            <video id="video-player" playsinline preload="auto" crossorigin="anonymous"></video>
+            <div class="buffer-overlay" id="bufferOverlay">
+                <div class="buffer-spinner"></div>
+                <div class="buffer-text" id="bufferText">Pré-buffering 15s</div>
+                <div class="buffer-progress"><div class="buffer-progress-fill" id="bufferFill"></div></div>
+                <div class="buffer-timer" id="bufferTimer">0 / 15s</div>
+                <div class="buffer-hint"><i class="fas fa-shield-alt"></i> Anti-lag activé · 15s pré-charge</div>
+            </div>
+            <div class="channel-feedback" id="channelFeedback"></div>
+            <div class="player-overlay" id="playerOverlay">
+                <div class="channel-tag">
+                    <div class="name" id="overlayName">Sélectionnez une chaîne</div>
+                    <div class="group" id="overlayGroup">--</div>
+                </div>
+                <div class="bottom-controls">
+                    <button class="ctrl-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                    <button class="ctrl-btn play" id="playBtn"><i class="fas fa-play" id="playIcon"></i></button>
+                    <button class="ctrl-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+                    <button class="ctrl-btn" id="manualBufferBtn"><i class="fas fa-sync-alt"></i></button>
+                    <div class="volume-wrap">
+                        <i class="fas fa-volume-up" id="volIcon"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.75">
+                    </div>
+                    <div class="time-label"><span id="currentTimeDisplay">0:00</span> / <span id="durationDisplay">0:00</span></div>
+                </div>
+            </div>
+            <button class="fs-btn" id="fsBtn">
+                <i class="fas fa-expand"></i>
+                <i class="fas fa-compress"></i>
+            </button>
+            <div class="viewer-badge" id="viewerBadge">
+                <i class="fas fa-users"></i>
+                <span id="viewerCount">0</span>
+                <span class="dot"></span>
+            </div>
+            <div style="position:absolute; top:16px; right:16px; z-index:12; background:rgba(0,10,16,0.5); backdrop-filter:blur(8px); border-radius:16px; padding:12px 18px; border:1px solid rgba(0,255,200,0.05); font-size:12px; min-width:140px; display:none;" id="bufferStats">
+                <div style="color:#6effc0; font-weight:500; margin-bottom:6px;">⚡ BUFFER</div>
+                <div><span style="color:#6a8a9a;">Temps:</span> <span id="statBufferTime">0s</span></div>
+                <div><span style="color:#6a8a9a;">Progrès:</span> <span id="statBufferProgress">0%</span></div>
+                <div><span style="color:#6a8a9a;">Vitesse:</span> <span id="statNetworkSpeed">0 Mbps</span></div>
+            </div>
+        </div>
+        <div class="info-panel" id="infoPanel">
+            <div class="panel-card now-playing">
+                <div class="title"><i class="fas fa-broadcast-tower"></i> EN LECTURE</div>
+                <div class="big-logo" id="npLogo">📺</div>
+                <div class="np-name" id="npName">Aucune</div>
+                <div class="np-group" id="npGroup">--</div>
+                <div style="margin-top:8px; font-size:12px; color:#4a7a8a;">Statut: <span id="streamStatus" style="color:#6effc0;">Prêt</span></div>
+            </div>
+            <div class="panel-card">
+                <div class="title"><i class="fas fa-tachometer-alt"></i> PERFORMANCE</div>
+                <div class="stat-row"><span class="label">Buffer cible</span><span class="value" id="targetBufferDisplay">15s</span></div>
+                <div class="stat-row"><span class="label">Buffer actuel</span><span class="value" id="currentBufferDisplay">0s</span></div>
+                <div class="stat-row"><span class="label">Réseau</span><span class="value" id="perfNetwork">--</span></div>
+                <div class="stat-row"><span class="label">Mode</span><span class="value" style="color:#6effc0;">Pré-charge 15s</span></div>
+            </div>
+            <div class="panel-card" style="font-size:12px; color:#4a7a8a;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <span><kbd>1-4</kbd> buffer</span>
+                    <span><kbd>B</kbd> manuel</span>
+                    <span><kbd>↑↓</kbd> chaînes</span>
+                    <span><kbd>F</kbd> plein écran</span>
+                    <span><kbd>0</kbd> FS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     (function() {
         "use strict";
@@ -504,55 +1265,19 @@
             }
         });
 
-        // ============================================
-        // TV REMOTE CHANNEL +/- SUPPORT
-        // Only addition — does not touch anything else.
-        // Listens for every common TV remote key variant.
-        // ============================================
+        // === TV REMOTE CHANNEL +/- (ONLY ADDITION) ===
         document.addEventListener('keydown', (e) => {
-            const key = e.key;
-            const code = e.code;
-            const kc = e.keyCode;
-
-            // Channel UP (next channel)
-            const isChannelUp =
-                key === 'ChannelUp' ||
-                key === 'MediaChannelUp' ||
-                key === 'PageUp' ||
-                code === 'ChannelUp' ||
-                code === 'MediaChannelUp' ||
-                code === 'PageUp' ||
-                kc === 33 ||          // PageUp legacy
-                kc === 427 ||         // some Android TV remotes
-                key === '+' ||
-                key === 'Add';
-
-            // Channel DOWN (previous channel)
-            const isChannelDown =
-                key === 'ChannelDown' ||
-                key === 'MediaChannelDown' ||
-                key === 'PageDown' ||
-                code === 'ChannelDown' ||
-                code === 'MediaChannelDown' ||
-                code === 'PageDown' ||
-                kc === 34 ||          // PageDown legacy
-                kc === 428 ||         // some Android TV remotes
-                key === '-' ||
-                key === 'Subtract';
-
-            if (isChannelUp) {
-                e.preventDefault();
-                navChannel(1);
-                showOverlay();
-            } else if (isChannelDown) {
-                e.preventDefault();
-                navChannel(-1);
-                showOverlay();
-            }
+            const k = e.key, c = e.code, n = e.keyCode;
+            const up = k === 'ChannelUp' || k === 'MediaChannelUp' || k === 'PageUp' ||
+                       c === 'ChannelUp' || c === 'MediaChannelUp' || c === 'PageUp' ||
+                       n === 33 || n === 427 || k === '+' || k === 'Add';
+            const down = k === 'ChannelDown' || k === 'MediaChannelDown' || k === 'PageDown' ||
+                         c === 'ChannelDown' || c === 'MediaChannelDown' || c === 'PageDown' ||
+                         n === 34 || n === 428 || k === '-' || k === 'Subtract';
+            if (up) { e.preventDefault(); navChannel(1); showOverlay(); }
+            else if (down) { e.preventDefault(); navChannel(-1); showOverlay(); }
         });
-        // ============================================
-        // END TV REMOTE CHANNEL +/- SUPPORT
-        // ============================================
+        // === END TV REMOTE CHANNEL +/- ===
 
         function init() {
             // Check server status and initialize viewer counter
@@ -628,3 +1353,5 @@
         document.addEventListener('DOMContentLoaded', init);
     })();
 </script>
+</body>
+</html>
