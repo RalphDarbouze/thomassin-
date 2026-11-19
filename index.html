@@ -651,11 +651,9 @@
 <div class="app" id="app">
     <div class="marquee-wrap">
         <div class="marquee-track">
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
-            <i class="fas fa-heart"></i> RUBIS TV · courtoisie des résidents de Thomassin <i class="fas fa-heart"></i>
+            
+            <i class="fas fa-heart"></i> RUBIS TV · courtoisie ECOLE DES RUBIS <i class="fas fa-heart"></i>
+            
         </div>
     </div>
     <div class="top-bar">
@@ -1266,16 +1264,13 @@
         });
 
         // === TV REMOTE CHANNEL +/- (ONLY ADDITION) ===
+        // This logs EVERY key to the console so we can identify your remote's
+        // channel buttons. Open DevTools (F12) → Console, press CH+ / CH- on
+        // your remote, and read the "REMOTE KEY:" lines.
         document.addEventListener('keydown', (e) => {
-            const k = e.key, c = e.code, n = e.keyCode;
-            const up = k === 'ChannelUp' || k === 'MediaChannelUp' || k === 'PageUp' ||
-                       c === 'ChannelUp' || c === 'MediaChannelUp' || c === 'PageUp' ||
-                       n === 33 || n === 427 || k === '+' || k === 'Add';
-            const down = k === 'ChannelDown' || k === 'MediaChannelDown' || k === 'PageDown' ||
-                         c === 'ChannelDown' || c === 'MediaChannelDown' || c === 'PageDown' ||
-                         n === 34 || n === 428 || k === '-' || k === 'Subtract';
-            if (up) { e.preventDefault(); navChannel(1); showOverlay(); }
-            else if (down) { e.preventDefault(); navChannel(-1); showOverlay(); }
+            console.log('REMOTE KEY:', JSON.stringify({
+                key: e.key, code: e.code, keyCode: e.keyCode, which: e.which
+            }));
         });
         // === END TV REMOTE CHANNEL +/- ===
 
