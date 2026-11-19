@@ -505,19 +505,16 @@
         });
 
         // ============================================
-        // TV REMOTE CHANNEL +/- SUPPORT (robust)
-        // Handles all common TV remote key variants.
+        // TV REMOTE CHANNEL +/- SUPPORT
+        // Only addition — does not touch anything else.
+        // Listens for every common TV remote key variant.
         // ============================================
         document.addEventListener('keydown', (e) => {
-            // --- DEBUG: log every key so you can see what your remote sends ---
-            // (open DevTools console, press CH+ / CH- on your remote)
-            console.log('KEY:', e.key, '| code:', e.code, '| keyCode:', e.keyCode);
-
             const key = e.key;
             const code = e.code;
             const kc = e.keyCode;
 
-            // Channel UP (next)
+            // Channel UP (next channel)
             const isChannelUp =
                 key === 'ChannelUp' ||
                 key === 'MediaChannelUp' ||
@@ -530,7 +527,7 @@
                 key === '+' ||
                 key === 'Add';
 
-            // Channel DOWN (previous)
+            // Channel DOWN (previous channel)
             const isChannelDown =
                 key === 'ChannelDown' ||
                 key === 'MediaChannelDown' ||
@@ -545,18 +542,14 @@
 
             if (isChannelUp) {
                 e.preventDefault();
-                navChannel(1);          // next channel
+                navChannel(1);
                 showOverlay();
-                return;
-            }
-            if (isChannelDown) {
+            } else if (isChannelDown) {
                 e.preventDefault();
-                navChannel(-1);         // previous channel
+                navChannel(-1);
                 showOverlay();
-                return;
             }
         });
-
         // ============================================
         // END TV REMOTE CHANNEL +/- SUPPORT
         // ============================================
